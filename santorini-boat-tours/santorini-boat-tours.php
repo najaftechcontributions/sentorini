@@ -47,6 +47,7 @@ require_once SBT_PLUGIN_DIR . 'includes/class-payment-handler.php';
 require_once SBT_PLUGIN_DIR . 'includes/class-email-notifications.php';
 require_once SBT_PLUGIN_DIR . 'includes/class-admin-dashboard.php';
 require_once SBT_PLUGIN_DIR . 'includes/class-url-handler.php';
+require_once SBT_PLUGIN_DIR . 'includes/class-shortcodes.php';
 
 /**
  * Main plugin class
@@ -83,29 +84,32 @@ class Santorini_Boat_Tours {
     public function init() {
         // Initialize post types
         SBT_Post_Types::instance();
-        
+
         // Initialize REST API
         SBT_REST_API::instance();
-        
+
         // Initialize booking manager
         SBT_Booking_Manager::instance();
-        
+
         // Initialize availability system
         SBT_Availability::instance();
-        
+
         // Initialize payment handler
         SBT_Payment_Handler::instance();
-        
+
         // Initialize email notifications
         SBT_Email_Notifications::instance();
-        
+
         // Initialize admin dashboard
         if (is_admin()) {
             SBT_Admin_Dashboard::instance();
         }
-        
+
         // Initialize URL handler
         SBT_URL_Handler::instance();
+
+        // Initialize shortcodes
+        SBT_Shortcodes::instance();
     }
     
     public function enqueue_scripts() {
@@ -168,12 +172,19 @@ class Santorini_Boat_Tours {
     public function activate() {
         // Create custom tables
         $this->create_tables();
-        
-        // Flush rewrite rules
-        flush_rewrite_rules();
-        
+
         // Set default options
         $this->set_default_options();
+
+        // Initialize post types and URL handler before flushing
+        SBT_Post_Types::instance();
+        SBT_URL_Handler::instance();
+
+        // Flush rewrite rules
+        flush_rewrite_rules();
+
+        // Set activation flag for admin notice
+        set_transient('sbt_activation_notice', true, 60);
     }
     
     public function deactivate() {

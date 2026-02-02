@@ -1,0 +1,142 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║         SANTORINI BOAT TOURS - QUICK SETUP GUIDE                         ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+✓ REQUIREMENTS
+  • WordPress 5.0 or higher
+  • PHP 7.4 or higher
+  • Advanced Custom Fields (ACF) plugin - Free or Pro version
+
+═══════════════════════════════════════════════════════════════════════════
+
+⚙ INSTALLATION STEPS
+
+1. INSTALL THE PLUGIN
+   - Upload the 'santorini-boat-tours' folder to /wp-content/plugins/
+   - OR install via WordPress admin: Plugins > Add New > Upload Plugin
+   - Activate the plugin through the 'Plugins' menu in WordPress
+
+2. INSTALL ACF PLUGIN (if not already installed)
+   - Go to: Plugins > Add New
+   - Search for "Advanced Custom Fields"
+   - Install and activate either ACF Free or ACF Pro
+
+3. IMPORT ACF FIELDS
+   - Go to: Custom Fields > Tools
+   - Select the "Import Field Groups" tab
+   - Click "Choose File" and select: acf-export.json (from plugin folder)
+   - Click "Import JSON"
+   - You should see: "2 field groups imported" (Tour Details & Booking Details)
+
+4. FLUSH PERMALINKS
+   - Go to: Settings > Permalinks
+   - Simply click "Save Changes" (no changes needed)
+   - This activates the pretty URLs for tours
+
+5. CREATE YOUR FIRST TOUR
+   - Go to: Tours > Add New Tour
+   - Fill in tour details (name, type, price, capacity, etc.)
+   - Add featured image and tour gallery
+   - Publish the tour
+
+═══════════════════════════════════════════════════════════════════════════
+
+📋 SHORTCODES USAGE
+
+Add these shortcodes to any page or post:
+
+  [sbt_booking_widget]
+  - Full booking widget with 4-step process
+  - Place this on your main booking page
+
+  [sbt_tour_list]
+  - Display all tours in a grid
+  - Options: type="morning" columns="3" limit="6"
+
+  [sbt_tour_card id="123"]
+  - Display single tour with full details
+  - Replace 123 with actual tour post ID
+
+  [sbt_availability_calendar]
+  - Standalone calendar to check availability
+  
+═══════════════════════════════════════════════════════════════════════════
+
+🔗 PRETTY URLS
+
+These URLs work automatically after permalink flush:
+  
+  /santorini-to-ios/          → Water Taxi to Ios tours
+  /santorini-to-mykonos/      → Water Taxi to Mykonos tours
+  /morning-tour/              → Morning boat tours
+  /sunset-tour/               → Sunset tours
+  /private-cruise/            → Private cruise tours
+  /book/?tour=morning         → Direct booking with tour pre-selected
+  /book/?tour=sunset&date=2024-06-15&passengers=4  → Pre-filled booking
+
+═══════════════════════════════════════════════════════════════════════════
+
+💳 PAYMENT SETUP (Optional)
+
+1. STRIPE SETUP
+   - Go to: Santorini Tours > Settings
+   - Enable Stripe
+   - Add your Stripe Publishable Key
+   - Add your Stripe Secret Key
+   - Get keys from: https://dashboard.stripe.com/apikeys
+
+2. PAYPAL SETUP
+   - Go to: Santorini Tours > Settings
+   - Enable PayPal
+   - Add your PayPal Client ID
+   - Add your PayPal Secret
+   - Get credentials from: https://developer.paypal.com/
+
+3. RECAPTCHA (Optional - prevents spam)
+   - Go to: Santorini Tours > Settings
+   - Enable reCAPTCHA
+   - Add Site Key and Secret Key
+   - Get keys from: https://www.google.com/recaptcha/admin
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ QUICK TEST
+
+1. Create a test tour (Tours > Add New)
+2. Create a page with [sbt_booking_widget] shortcode
+3. Visit the page and try the booking process
+4. Check if URLs like /morning-tour/ work
+5. View bookings at: Santorini Tours > Bookings
+
+═══════════════════════════════════════════════════════════════════════════
+
+📁 IMPORTANT FILES
+
+  /acf-export.json             → ACF fields to import
+  /includes/                   → Plugin core files
+  /assets/css/frontend.css     → Frontend styles (customizable)
+  /assets/js/frontend.js       → Frontend scripts
+
+═══════════════════════════════════════════════════════════════════════════
+
+🆘 TROUBLESHOOTING
+
+PROBLEM: Pretty URLs not working (404 errors)
+SOLUTION: Go to Settings > Permalinks and click Save Changes
+
+PROBLEM: ACF fields not showing
+SOLUTION: Make sure ACF plugin is active and import acf-export.json
+
+PROBLEM: Booking widget not appearing
+SOLUTION: Check if you added [sbt_booking_widget] shortcode to your page
+
+PROBLEM: Tours not displaying
+SOLUTION: Create at least one tour at Tours > Add New Tour
+
+═══════════════════════════════════════════════════════════════════════════
+
+📧 SUPPORT
+
+For issues or questions, check the README.md file for detailed documentation.
+
+═══════════════════════════════════════════════════════════════════════════
