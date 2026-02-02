@@ -1,0 +1,27 @@
+<table class="form-table button-options text" role="presentation">
+    <tbody>
+        <tr>
+            <th scope="row">{{labels.accessibility_aria_label}}</th>
+            <td>
+                <input type="text" class="regular-text" id="accessibility_aria_label" v-model="data.accessibility_aria_label" />
+                <help-icon :help-text="help.accessibility_aria_label"></help-icon>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">{{labels.accessibility_title}}</th>
+            <td>
+                <input type="text" class="regular-text" id="accessibility_title" v-model="data.accessibility_title" />
+                <help-icon :help-text="help.accessibility_title"></help-icon>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">{{labels.accessibility_screen_reader_text}}</th>
+            <td>
+                <input type="text" class="regular-text" id="accessibility_screen_reader_text" v-model="data.accessibility_screen_reader_text" />
+                <help-icon :help-text="help.accessibility_screen_reader_text"></help-icon>
+            </td>
+        </tr>
+    </tbody>
+</table>

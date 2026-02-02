@@ -1,0 +1,150 @@
+<table class="form-table" role="presentation">
+    <tbody>
+        <tr>
+            <th scope="row">{{ labels.enabled }}</th>
+            <td>
+                <input type="checkbox" id="enabled" v-model="data.enabled" />
+                <help-icon :help-text="help.enabled"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.javascript_async }}</th>
+            <td>
+                <input type="checkbox" id="javascript_async" v-model="data.javascript_async" />
+                <help-icon :help-text="help.javascript_async"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.scroll_offset }}</th>
+            <td>
+                <input type="text" class="small-text pixels" id="scroll_offset" v-model="data.scroll_offset" />px
+                <help-icon :help-text="help.scroll_offset"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.button_size }}</th>
+            <td>
+                <input type="text" class="small-text pixels" id="button_width" v-model="data.button_width" />px
+                X
+                <input type="text" class="small-text pixels" id="button_height" v-model="data.button_height" />px
+                <help-icon :help-text="help.button_size"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.button_opacity }}</th>
+            <td>
+                <input type="text" class="small-text seconds" id="button_opacity" v-model="data.button_opacity" />%
+                <help-icon :help-text="help.button_opacity"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.button_fade_duration }}</th>
+            <td>
+                <input type="text" class="small-text seconds" id="button_fade_duration" v-model="data.button_fade_duration" />ms
+                <help-icon :help-text="help.button_fade_duration"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.scroll_duration }}</th>
+            <td>
+                <input type="text" class="small-text seconds" id="scroll_duration" v-model="data.scroll_duration" />ms
+                <help-icon :help-text="help.scroll_duration"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.auto_hide }}</th>
+            <td>
+                <input type="checkbox" id="auto_hide" v-model="data.auto_hide" />
+                <help-icon :help-text="help.auto_hide"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.auto_hide_after }}</th>
+            <td>
+                <input type="text" class="small-text seconds" id="auto_hide_after" v-model="data.auto_hide_after" />sec
+                <help-icon :help-text="help.auto_hide_after"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{labels.hide_small_window}}</th>
+            <td>
+                <input type="checkbox" id="hide_small_window" v-model="data.hide_small_window" />
+                <help-icon :help-text="help.hide_small_window"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{labels.small_window_width}}</th>
+            <td>
+                <input type="text" class="small-text pixels" id="small_window_width" v-model="data.small_window_width" />px
+                <help-icon :help-text="help.small_window_width"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{labels.hide_wpadmin}}</th>
+            <td>
+                <input type="checkbox" id="hide_wpadmin" v-model="data.hide_wpadmin" />
+                <help-icon :help-text="help.hide_wpadmin"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{labels.hide_iframe}}</th>
+            <td>
+                <input type="checkbox" id="hide_iframe" v-model="data.hide_iframe" />
+                <help-icon :help-text="help.hide_iframe"></help-icon>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{labels.button_style}}</th>
+            <td>
+                <div v-for="(display, value) in button_style_options">
+                    <label>
+                        <input type="radio" :value="value" :id="'button_style_' + value" v-model="data.button_style" />{{ display }}
+                        <help-icon :help-text="help['button_style_options_' + value]"></help-icon>
+                    </label>        
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row">{{ labels.button_action }}</th>
+            <td>
+                <div v-for="(display, value) in button_action_options">
+                    <label>
+                        <input type="radio" name="button_action_options" :value="value" :id="'button_action_' + value" v-model="data.button_action" />
+                        {{ display }}
+                        <help-icon :help-text="help['button_action_options' + '_' + value]"></help-icon>
+                    </label>
+                </div>
+            </td>
+        </tr>
+        <tr v-if="data.button_action === 'element'">
+            <th scope="row">{{ labels.button_action_element_selector }}</th>
+            <td>
+                <input type="text" class="regular-text" id="button_action_element_selector" v-model="data.button_action_element_selector" />
+                <help-icon :help-text="help.button_action_element_selector"></help-icon>
+                <br />
+                <a target="_blank" rel="noopener" href="https://wpfront.com/wordpress-plugins/scroll-top-plugin/scroll-top-plugin-faq/">{{ labels.button_action_element_how_to_link }}</a>
+            </td>
+        </tr>
+        <tr v-if="data.button_action === 'element'">
+            <th scope="row">{{ labels.button_action_container_selector }}</th>
+            <td>
+                <input type="text" class="regular-text" id="button_action_container_selector" v-model="data.button_action_container_selector" />
+                <help-icon :help-text="help.button_action_container_selector"></help-icon>
+            </td>
+        </tr>
+        <tr v-if="data.button_action === 'element'">
+            <th scope="row">{{ labels.button_action_element_offset }}</th>
+            <td>
+                <input type="text" class="small-text pixels" id="button_action_element_offset" v-model="data.button_action_element_offset" />px
+                <help-icon :help-text="help.button_action_element_offset"></help-icon>
+            </td>
+        </tr>
+        <tr v-if="data.button_action === 'url'">
+            <th scope="row">{{ labels.button_action_page_url }}</th>
+            <td>
+                <input type="text" class="regular-text" id="button_action_page_url" v-model="data.button_action_page_url" />
+                <help-icon :help-text="help.button_action_page_url"></help-icon>
+            </td>
+        </tr>
+    </tbody>
+</table>

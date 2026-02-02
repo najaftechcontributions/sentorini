@@ -1,0 +1,27 @@
+<table class="form-table button-options text" role="presentation">
+    <tbody>
+        <tr>
+            <th scope="row">{{ labels.css_enqueue_file }}</th>
+            <td>
+                <input type="checkbox" id="css_enqueue_file" v-model="data.css_enqueue_file" />
+                <help-icon :help-text="help.css_enqueue_file"></help-icon>
+            </td>
+        </tr>
+
+        <tr>
+            <th scope="row">{{labels.css_file_location}}</th>
+            <td>
+                <input type="text" class="regular-text url" id="css_file_location" v-model="data.css_file_location" disabled="true" />
+                <help-icon :help-text="help.css_file_location"></help-icon>
+            </td>
+        </tr>
+        
+        <tr>
+            <th scope="row">{{labels.css_extra_css}}</th>
+            <td>
+                <textarea rows="5" cols="100" id="css_extra_css" v-model="data.css_extra_css"></textarea>
+                <help-icon :help-text="help.css_extra_css"></help-icon>
+            </td>
+        </tr>
+    </tbody>
+</table>
