@@ -1,0 +1,623 @@
+/**
+ * Santorini Boat Tours - Frontend Styles
+ * Greek-inspired clean blue and white aesthetic
+ */
+
+:root {
+    --sbt-primary: #1e3a8a;
+    --sbt-primary-light: #3b82f6;
+    --sbt-secondary: #0ea5e9;
+    --sbt-accent: #f59e0b;
+    --sbt-success: #10b981;
+    --sbt-danger: #ef4444;
+    --sbt-white: #ffffff;
+    --sbt-gray-50: #f9fafb;
+    --sbt-gray-100: #f3f4f6;
+    --sbt-gray-200: #e5e7eb;
+    --sbt-gray-300: #d1d5db;
+    --sbt-gray-600: #4b5563;
+    --sbt-gray-700: #374151;
+    --sbt-gray-900: #111827;
+}
+
+/* Global Santorini-inspired styles */
+.sbt-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.sbt-section {
+    padding: 60px 0;
+}
+
+.sbt-section-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.sbt-section-subtitle {
+    font-size: 18px;
+    color: var(--sbt-gray-600);
+    text-align: center;
+    margin-bottom: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Tour Cards */
+.sbt-tours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.sbt-tour-card {
+    background: var(--sbt-white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sbt-tour-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.sbt-tour-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.sbt-tour-card-content {
+    padding: 24px;
+}
+
+.sbt-tour-card-type {
+    display: inline-block;
+    background: var(--sbt-secondary);
+    color: var(--sbt-white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.sbt-tour-card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    margin: 0 0 12px 0;
+}
+
+.sbt-tour-card-description {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.sbt-tour-card-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+}
+
+.sbt-tour-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sbt-tour-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--sbt-gray-200);
+}
+
+.sbt-tour-card-price {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+}
+
+.sbt-tour-card-price-label {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    font-weight: 400;
+}
+
+/* Buttons */
+.sbt-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.sbt-btn-primary {
+    background: var(--sbt-primary-light);
+    color: var(--sbt-white);
+}
+
+.sbt-btn-primary:hover {
+    background: var(--sbt-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.sbt-btn-secondary {
+    background: var(--sbt-white);
+    color: var(--sbt-primary);
+    border: 2px solid var(--sbt-primary);
+}
+
+.sbt-btn-secondary:hover {
+    background: var(--sbt-primary);
+    color: var(--sbt-white);
+}
+
+.sbt-btn-large {
+    padding: 16px 40px;
+    font-size: 18px;
+}
+
+/* Booking Widget */
+.sbt-booking-widget {
+    background: var(--sbt-white);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.sbt-booking-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.sbt-booking-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--sbt-gray-200);
+    z-index: 0;
+}
+
+.sbt-booking-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-booking-step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--sbt-gray-200);
+    color: var(--sbt-gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.sbt-booking-step.active .sbt-booking-step-number {
+    background: var(--sbt-primary-light);
+    color: var(--sbt-white);
+}
+
+.sbt-booking-step.completed .sbt-booking-step-number {
+    background: var(--sbt-success);
+    color: var(--sbt-white);
+}
+
+.sbt-booking-step-label {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    font-weight: 500;
+}
+
+.sbt-booking-step.active .sbt-booking-step-label {
+    color: var(--sbt-primary);
+    font-weight: 600;
+}
+
+.sbt-booking-content {
+    min-height: 400px;
+}
+
+/* Form Elements */
+.sbt-form-group {
+    margin-bottom: 24px;
+}
+
+.sbt-form-label {
+    display: block;
+    font-weight: 600;
+    color: var(--sbt-gray-700);
+    margin-bottom: 8px;
+}
+
+.sbt-form-input,
+.sbt-form-select,
+.sbt-form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.sbt-form-input:focus,
+.sbt-form-select:focus,
+.sbt-form-textarea:focus {
+    outline: none;
+    border-color: var(--sbt-primary-light);
+}
+
+.sbt-form-error {
+    color: var(--sbt-danger);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* Tour Selection */
+.sbt-tour-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.sbt-tour-option {
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sbt-tour-option:hover {
+    border-color: var(--sbt-primary-light);
+    background: var(--sbt-gray-50);
+}
+
+.sbt-tour-option.selected {
+    border-color: var(--sbt-primary-light);
+    background: #dbeafe;
+}
+
+.sbt-tour-option input[type="radio"] {
+    display: none;
+}
+
+/* Calendar */
+.sbt-calendar {
+    background: var(--sbt-white);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.sbt-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sbt-calendar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+}
+
+.sbt-calendar-nav {
+    background: none;
+    border: none;
+    color: var(--sbt-primary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 12px;
+}
+
+.sbt-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.sbt-calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sbt-calendar-day:hover:not(.disabled):not(.blocked) {
+    background: var(--sbt-gray-100);
+}
+
+.sbt-calendar-day.selected {
+    background: var(--sbt-primary-light);
+    color: var(--sbt-white);
+}
+
+.sbt-calendar-day.disabled {
+    color: var(--sbt-gray-300);
+    cursor: not-allowed;
+}
+
+.sbt-calendar-day.blocked {
+    background: var(--sbt-gray-100);
+    color: var(--sbt-gray-400);
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.sbt-calendar-day.almost-full::after {
+    content: '!';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    color: var(--sbt-accent);
+    font-weight: 700;
+}
+
+/* Passenger Counter */
+.sbt-passenger-counter {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.sbt-counter-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--sbt-primary-light);
+    background: var(--sbt-white);
+    color: var(--sbt-primary-light);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sbt-counter-btn:hover:not(:disabled) {
+    background: var(--sbt-primary-light);
+    color: var(--sbt-white);
+}
+
+.sbt-counter-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.sbt-counter-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Testimonials */
+.sbt-testimonials {
+    background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
+    padding: 60px 0;
+}
+
+.sbt-testimonial-slider {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.sbt-testimonial {
+    background: var(--sbt-white);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sbt-testimonial-text {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--sbt-gray-700);
+    margin-bottom: 24px;
+    font-style: italic;
+}
+
+.sbt-testimonial-author {
+    font-weight: 700;
+    color: var(--sbt-primary);
+    margin-bottom: 4px;
+}
+
+.sbt-testimonial-location {
+    color: var(--sbt-gray-600);
+    font-size: 14px;
+}
+
+.sbt-testimonial-stars {
+    color: var(--sbt-accent);
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+/* Service Grid */
+.sbt-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.sbt-service-item {
+    text-align: center;
+    padding: 30px;
+    background: var(--sbt-white);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.sbt-service-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.sbt-service-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--sbt-primary-light) 0%, var(--sbt-secondary) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: var(--sbt-white);
+}
+
+.sbt-service-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    margin-bottom: 12px;
+}
+
+.sbt-service-description {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    line-height: 1.6;
+}
+
+/* Status Badges */
+.sbt-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.sbt-badge-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sbt-badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.sbt-badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sbt-badge-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Loading States */
+.sbt-loading {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--sbt-gray-200);
+    border-top-color: var(--sbt-primary-light);
+    border-radius: 50%;
+    animation: sbt-spin 1s linear infinite;
+}
+
+@keyframes sbt-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sbt-section-title {
+        font-size: 28px;
+    }
+    
+    .sbt-tours-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sbt-booking-steps {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .sbt-booking-steps::before {
+        display: none;
+    }
+    
+    .sbt-booking-widget {
+        padding: 24px;
+    }
+    
+    .sbt-tour-selection {
+        grid-template-columns: 1fr;
+    }
+    
+    .sbt-services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Accessibility */
+.sbt-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Print Styles */
+@media print {
+    .sbt-booking-widget,
+    .sbt-btn {
+        display: none;
+    }
+}
