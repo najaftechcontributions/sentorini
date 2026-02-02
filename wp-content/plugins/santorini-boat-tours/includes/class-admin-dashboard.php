@@ -85,9 +85,10 @@ class SBT_Admin_Dashboard {
     
     public function dashboard_page() {
         global $wpdb;
-        
+
         // Get stats
-        $total_bookings = wp_count_posts('sbt_booking')->publish;
+        $booking_counts = wp_count_posts('sbt_booking');
+        $total_bookings = isset($booking_counts->publish) ? $booking_counts->publish : 0;
         $confirmed_bookings = $wpdb->get_var("
             SELECT COUNT(*) FROM {$wpdb->posts} p
             INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id

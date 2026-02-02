@@ -69,12 +69,19 @@ class Santorini_Boat_Tours {
     
     private function init_hooks() {
         add_action('plugins_loaded', [$this, 'load_textdomain']);
+        // Initialize post types early to ensure they exist
+        add_action('plugins_loaded', [$this, 'init_post_types'], 5);
         add_action('init', [$this, 'init']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
-        
+
         register_activation_hook(__FILE__, [$this, 'activate']);
         register_deactivation_hook(__FILE__, [$this, 'deactivate']);
+    }
+
+    public function init_post_types() {
+        // Initialize post types before everything else
+        SBT_Post_Types::instance();
     }
     
     public function load_textdomain() {
@@ -82,9 +89,6 @@ class Santorini_Boat_Tours {
     }
     
     public function init() {
-        // Initialize post types
-        SBT_Post_Types::instance();
-
         // Initialize REST API
         SBT_REST_API::instance();
 
@@ -177,7 +181,11 @@ class Santorini_Boat_Tours {
         $this->set_default_options();
 
         // Initialize post types and URL handler before flushing
-        SBT_Post_Types::instance();
+        $post_types = SBT_Post_Types::instance();
+        // Manually trigger post type registration during activation
+        $post_types->register_post_types();
+        $post_types->register_taxonomies();
+
         SBT_URL_Handler::instance();
 
         // Flush rewrite rules
