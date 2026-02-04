@@ -43,6 +43,17 @@
             $(document).on('change', '.sbt-filter-slider', this.applyFilters);
             $(document).on('click', '.sbt-clear-filters', this.clearFilters);
             $(document).on('click', '.sbt-search-clear', this.clearSearch);
+            $(document).on('click', '.sbt-mobile-filter-toggle', this.toggleMobileFilters);
+
+            // Close mobile filters when clicking outside
+            $(document).on('click', function(e) {
+                const $sidebar = $('.sbt-filters-sidebar');
+                if ($sidebar.hasClass('active') &&
+                    !$(e.target).closest('.sbt-filters-sidebar').length &&
+                    !$(e.target).closest('.sbt-mobile-filter-toggle').length) {
+                    SBT.closeMobileFilters();
+                }
+            });
         },
 
         initGalleryLightbox: function() {
@@ -1652,6 +1663,9 @@
                 $('.sbt-clear-filters').hide();
             }
 
+            // Update mobile filter count badge
+            SBT.updateFilterCount();
+
             // Filter tours
             let visibleCount = 0;
 
@@ -1804,6 +1818,9 @@
 
             // Hide clear button
             $('.sbt-clear-filters').hide();
+
+            // Update mobile filter count badge
+            SBT.updateFilterCount();
         },
 
         clearSearch: function(e) {
@@ -1813,6 +1830,66 @@
 
             $input.val('').trigger('input').focus();
             $btn.hide();
+        },
+
+        toggleMobileFilters: function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const $sidebar = $('.sbt-filters-sidebar');
+            const $body = $('body');
+
+            if ($sidebar.hasClass('active')) {
+                SBT.closeMobileFilters();
+            } else {
+                $sidebar.addClass('active');
+                $btn.addClass('active');
+                $btn.find('.sbt-filter-toggle-text').text('Close Filters');
+                $body.css('overflow', 'hidden');
+
+                // Update filter count badge
+                SBT.updateFilterCount();
+            }
+        },
+
+        closeMobileFilters: function(e) {
+            if (e) {
+                e.preventDefault();
+            }
+
+            const $sidebar = $('.sbt-filters-sidebar');
+            const $btn = $('.sbt-mobile-filter-toggle');
+            const $body = $('body');
+
+            $sidebar.removeClass('active');
+            $btn.removeClass('active');
+            $btn.find('.sbt-filter-toggle-text').text('Filters');
+            $body.css('overflow', '');
+        },
+
+        updateFilterCount: function() {
+            // Count active filters
+            let count = 0;
+
+            // Count checked checkboxes
+            count += $('.sbt-filter-checkbox input[type="checkbox"]:checked').length;
+
+            // Count if range slider is not at minimum
+            const minPassengers = parseInt($('.sbt-filter-slider[name="min_passengers"]').val()) || 1;
+            if (minPassengers > 1) {
+                count++;
+            }
+
+            // Count if search has value
+            if ($('.sbt-filter-search').val().trim()) {
+                count++;
+            }
+
+            const $badge = $('.sbt-filter-count');
+            if (count > 0) {
+                $badge.text(count).show();
+            } else {
+                $badge.hide();
+            }
         }
     };
     

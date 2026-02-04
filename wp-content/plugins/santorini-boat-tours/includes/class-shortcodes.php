@@ -510,6 +510,15 @@ class SBT_Shortcodes
     ?>
         <div class="sbt-tour-archive <?php echo $atts['show_filters'] === 'true' ? 'sbt-has-sidebar-filters' : ''; ?>">
             <?php if ($atts['show_filters'] === 'true'): ?>
+                <!-- Mobile Filter Toggle Button -->
+                <button type="button" class="sbt-mobile-filter-toggle">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                    <span class="sbt-filter-toggle-text">Filters</span>
+                    <span class="sbt-filter-count" style="display: none;"></span>
+                </button>
+
                 <!-- Left Sidebar Filters -->
                 <aside class="sbt-filters-sidebar">
                     <div class="sbt-filters-header">

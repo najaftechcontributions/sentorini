@@ -3501,7 +3501,163 @@
     display: none;
 }
 
+/* Mobile Filter Toggle Button */
+.sbt-mobile-filter-toggle {
+    display: none !important;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--sbt-primary-light) 0%, var(--sbt-primary) 100%);
+    color: var(--sbt-white) !important;
+    border: none !important;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 24px;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sbt-mobile-filter-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.sbt-mobile-filter-toggle:hover::before {
+    left: 100%;
+}
+
+.sbt-mobile-filter-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+}
+
+.sbt-mobile-filter-toggle:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.sbt-mobile-filter-toggle.active {
+    background: linear-gradient(135deg, var(--sbt-danger) 0%, #dc2626 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.sbt-mobile-filter-toggle svg {
+    flex-shrink: 0;
+}
+
+.sbt-filter-count {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+}
+
 /* Responsive Filters */
+@media (max-width: 1199px) {
+    .sbt-mobile-filter-toggle {
+        display: flex !important;
+        width: fit-content !important;
+    }
+    .sbt-tour-archive.sbt-has-sidebar-filters {
+        grid-template-columns: 1fr !important;
+    }
+    .sbt-filters-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        max-width: 400px;
+        height: 100vh;
+        z-index: 9999;
+        overflow-y: auto;
+        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+        border-radius: 0;
+    }
+
+    .sbt-filters-sidebar.active {
+        left: 0;
+    }
+
+    .sbt-filters-sidebar::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: -1;
+    }
+
+    .sbt-filters-sidebar.active::before {
+        opacity: 1;
+        pointer-events: auto;
+        left: 400px;
+    }
+
+    .sbt-filters-header {
+        position: sticky;
+        top: 0;
+        background: var(--sbt-white);
+        z-index: 10;
+        padding: 20px 0;
+        margin: 0 0 20px 0;
+    }
+
+    .sbt-filter-section {
+        animation: filterSlideIn 0.3s ease backwards;
+    }
+
+    .sbt-filter-section:nth-child(1) { animation-delay: 0.05s; }
+    .sbt-filter-section:nth-child(2) { animation-delay: 0.1s; }
+    .sbt-filter-section:nth-child(3) { animation-delay: 0.15s; }
+    .sbt-filter-section:nth-child(4) { animation-delay: 0.2s; }
+    .sbt-filter-section:nth-child(5) { animation-delay: 0.25s; }
+
+    @keyframes filterSlideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Horizontal wrap for filter options */
+    .sbt-filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sbt-filter-checkbox {
+        flex: 0 1 auto;
+        min-width: fit-content;
+        padding: 8px 14px;
+    }
+}
+
 @media (max-width: 1024px) {
     .sbt-tour-archive.sbt-has-sidebar-filters {
         grid-template-columns: 1fr;

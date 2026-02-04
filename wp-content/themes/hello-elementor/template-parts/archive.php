@@ -23,8 +23,27 @@ if (! defined('ABSPATH')) {
 		.site-header .header-inner,
 		.site-header:not(.dynamic-header),
 		body:not([class*=elementor-page-]) .site-main {
-			max-width: 1440px;
+			max-width: 1480px;
+			padding: 0 20px !important;
 		}
+	}
+
+	@media  (max-width:1199px) {
+
+		.page-header .entry-title,
+		.site-footer .footer-inner,
+		.site-footer:not(.dynamic-footer),
+		.site-header .header-inner,
+		.site-header:not(.dynamic-header),
+		body:not([class*=elementor-page-]) .site-main {
+			max-width: 1480px;
+			padding: 0 20px !important;
+		}
+	}
+	.sbt-step-header {
+		padding-right: 0 !important;
+		padding-left: 0 !important;
+		padding-bottom: 0 !important;
 	}
 </style>
 <main id="content" class="site-main">
