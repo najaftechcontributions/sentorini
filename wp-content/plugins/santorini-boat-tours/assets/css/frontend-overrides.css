@@ -1,0 +1,568 @@
+/**
+ * Santorini Boat Tours - Elementor Override Styles
+ * Use !important flags to override Elementor default CSS
+ * Mobile responsiveness enhancements
+ */
+
+/* =======================
+   CRITICAL OVERRIDES
+   ======================= */
+
+/* Container and Layout - Force proper widths */
+.sbt-booking-widget,
+.sbt-tour-archive,
+.sbt-single-tour-detail,
+.sbt-booking-confirmation {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Buttons - Override Elementor button styles */
+.sbt-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: none !important;
+    cursor: pointer !important;
+    line-height: 1.5 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.sbt-btn-primary {
+    background: linear-gradient(135deg, var(--sbt-primary-light) 0%, var(--sbt-primary) 100%) !important;
+    color: var(--sbt-white) !important;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+}
+
+.sbt-btn-secondary {
+    background: var(--sbt-white) !important;
+    color: var(--sbt-primary) !important;
+    border: 2px solid var(--sbt-primary) !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1) !important;
+}
+
+.sbt-btn-large {
+    padding: 16px 32px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+/* Form Inputs - Override Elementor form styles */
+.sbt-form-input,
+.sbt-form-textarea,
+.sbt-form-select {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    border: 2px solid var(--sbt-gray-200) !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    color: var(--sbt-gray-900) !important;
+    background: var(--sbt-white) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-family: inherit !important;
+    box-sizing: border-box !important;
+}
+
+.sbt-form-input:focus,
+.sbt-form-textarea:focus,
+.sbt-form-select:focus {
+    outline: none !important;
+    border-color: var(--sbt-primary-light) !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Headings - Override Elementor heading styles */
+.sbt-step-header h3,
+.sbt-section-heading,
+.sbt-summary-title,
+.sbt-form-title {
+    font-family: inherit !important;
+    line-height: 1.3 !important;
+    margin: 0 !important;
+}
+
+/* Grid Layouts - Ensure proper grid behavior */
+.sbt-tours-grid {
+    display: grid !important;
+    gap: 32px !important;
+}
+
+.sbt-tours-columns-1 {
+    grid-template-columns: 1fr !important;
+}
+
+.sbt-tours-columns-2 {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)) !important;
+}
+
+.sbt-tours-columns-3 {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+}
+
+/* Tour Cards - Override Elementor card styles */
+.sbt-tour-card-archive {
+    background: var(--sbt-white) !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid var(--sbt-gray-100) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-sizing: border-box !important;
+}
+
+.sbt-tour-card-image {
+    position: relative !important;
+    width: 100% !important;
+    height: 280px !important;
+    overflow: hidden !important;
+}
+
+.sbt-tour-card-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+}
+
+/* Calendar - Override Elementor calendar/date picker styles */
+.sbt-calendar {
+    background: var(--sbt-white) !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    border: 1px solid var(--sbt-gray-200) !important;
+    box-sizing: border-box !important;
+}
+
+.sbt-calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 8px !important;
+}
+
+.sbt-calendar-day {
+    aspect-ratio: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: var(--sbt-white) !important;
+    border: 2px solid var(--sbt-gray-200) !important;
+    box-sizing: border-box !important;
+}
+
+.sbt-calendar-day.selected {
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary)) !important;
+    color: var(--sbt-white) !important;
+    border-color: var(--sbt-primary) !important;
+    transform: scale(1.15) !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3), 0 8px 20px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Multi-date range selection - Visual feedback */
+.sbt-calendar-day.in-range {
+    background: #bfdbfe !important;
+    color: var(--sbt-primary-dark) !important;
+    border-color: var(--sbt-primary-light) !important;
+}
+
+.sbt-calendar-day.range-start,
+.sbt-calendar-day.range-end {
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary)) !important;
+    color: var(--sbt-white) !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+.sbt-calendar-day.range-start {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.sbt-calendar-day.range-end {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.sbt-calendar-day.range-start.range-end {
+    border-radius: 10px !important;
+}
+
+/* Booking Steps - Override Elementor step indicator styles */
+.sbt-booking-steps {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-bottom: 50px !important;
+    position: relative !important;
+}
+
+.sbt-step-number {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: var(--sbt-gray-200) !important;
+    color: var(--sbt-gray-600) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-bottom: 12px !important;
+    font-weight: 700 !important;
+    font-size: 18px !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sbt-booking-step.active .sbt-step-number {
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary)) !important;
+    color: var(--sbt-white) !important;
+    transform: scale(1.15) !important;
+}
+
+/* Price Display - Force consistent styling */
+.sbt-price-amount {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: var(--sbt-primary) !important;
+}
+
+.sbt-price-per,
+.sbt-price-label {
+    font-size: 13px !important;
+    color: var(--sbt-gray-600) !important;
+}
+
+/* Summary Card - Override Elementor widget styles */
+.sbt-booking-summary-card,
+.sbt-booking-form-card {
+    background: var(--sbt-white) !important;
+    border-radius: 12px !important;
+    padding: 32px !important;
+    border: 1px solid var(--sbt-gray-200) !important;
+    box-sizing: border-box !important;
+}
+
+/* =======================
+   MOBILE RESPONSIVENESS
+   ======================= */
+
+@media (max-width: 1024px) {
+    /* Force single column on tablets */
+    .sbt-tour-two-column {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sbt-tours-columns-2,
+    .sbt-tours-columns-3 {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    }
+
+    .sbt-confirmation-content-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Force single column on mobile */
+    .sbt-tours-grid,
+    .sbt-tours-columns-1,
+    .sbt-tours-columns-2,
+    .sbt-tours-columns-3 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Adjust padding for mobile */
+    .sbt-booking-widget {
+        padding: 30px 20px !important;
+    }
+    .sbt-tour-type-badge {
+        top: 5px !important;
+    }
+    .sbt-step-body {
+        padding: 24px 0 !important;
+    }
+    .sbt-calendar-full-width .sbt-calendar-day {
+        min-width: 100%;
+    }
+    .sbt-step-header,
+    .sbt-step-footer {
+        padding: 24px 20px !important;
+    }
+
+    .sbt-booking-summary-card,
+    .sbt-booking-form-card,
+    .sbt-confirmation-section {
+        padding: 24px 20px !important;
+    }
+
+    /* Stack form rows on mobile */
+    .sbt-form-row {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    /* Stack buttons on mobile */
+    .sbt-form-actions,
+    .sbt-confirmation-actions {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .sbt-form-actions .sbt-btn,
+    .sbt-confirmation-actions .sbt-btn {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Adjust step indicator for mobile */
+    .sbt-booking-steps {
+        row-gap: 18px !important;
+        column-gap: 12px !important;
+    }
+
+    .sbt-booking-step {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        text-align: left !important;
+    }
+
+    .sbt-step-number {
+        margin-bottom: 0 !important;
+    }
+
+    /* Smaller headings on mobile */
+    .sbt-step-header h3 {
+        font-size: 22px !important;
+    }
+
+    .sbt-tour-hero-title {
+        font-size: 32px !important;
+    }
+
+    .sbt-confirmation-title {
+        font-size: 36px !important;
+    }
+
+    /* Adjust calendar for mobile */
+    .sbt-calendar {
+        padding: 16px !important;
+    }
+
+    .sbt-calendar-grid {
+        gap: 4px !important;
+    }
+
+    .sbt-calendar-day {
+        font-size: 12px !important;
+        padding: 8px 4px !important;
+    }
+
+    /* Stack tour archive header on mobile */
+    .sbt-tour-archive-header {
+        flex-direction: column !important;
+        gap: 16px !important;
+        align-items: stretch !important;
+    }
+
+    .sbt-tour-filters {
+        width: 100% !important;
+    }
+
+    .sbt-tour-type-filter {
+        width: 100% !important;
+    }
+
+    /* Adjust meta grid for mobile */
+    .sbt-tour-card-meta-grid,
+    .sbt-quick-info {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Tour item layout for mobile */
+    .sbt-tour-item {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .sbt-tour-thumbnail {
+        width: 100% !important;
+        height: 200px !important;
+    }
+
+    /* Passenger counter for mobile */
+    .sbt-passenger-counter {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        padding: 24px 16px !important;
+    }
+
+    .sbt-counter-btn {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 24px !important;
+    }
+
+    .sbt-counter-value {
+        font-size: 40px !important;
+        min-width: 60px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens */
+    .sbt-booking-widget {
+        padding: 20px 15px !important;
+    }
+
+    .sbt-step-header h3 {
+        font-size: 20px !important;
+    }
+
+    .sbt-tour-hero-title {
+        font-size: 24px !important;
+    }
+
+    .sbt-confirmation-title {
+        font-size: 28px !important;
+    }
+
+    .sbt-price-amount {
+        font-size: 24px !important;
+    }
+
+    .sbt-counter-value {
+        font-size: 32px !important;
+    }
+
+    .sbt-btn {
+        padding: 12px 20px !important;
+        font-size: 15px !important;
+    }
+
+    .sbt-btn-large {
+        padding: 14px 24px !important;
+        font-size: 16px !important;
+    }
+
+    /* Smaller calendar on very small screens */
+    .sbt-calendar {
+        padding: 12px !important;
+    }
+
+    .sbt-calendar-day {
+        font-size: 11px !important;
+    }
+
+    .sbt-success-icon {
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    .sbt-code-value {
+        font-size: 24px !important;
+    }
+}
+
+/* =======================
+   ELEMENTOR WIDGET FIXES
+   ======================= */
+
+/* Override Elementor column padding */
+.elementor-widget-container .sbt-booking-widget,
+.elementor-widget-container .sbt-tour-archive,
+.elementor-widget-container .sbt-single-tour-detail {
+    margin: 0 !important;
+}
+
+/* Override Elementor image styles */
+.elementor-widget-container .sbt-tour-card-image img,
+.elementor-widget-container .sbt-tour-thumbnail img,
+.elementor-widget-container .sbt-gallery-image {
+    max-width: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+/* Override Elementor link styles */
+.elementor-widget-container a.sbt-btn {
+    text-decoration: none !important;
+}
+
+/* Override Elementor heading margins */
+.elementor-widget-container .sbt-section-heading,
+.elementor-widget-container .sbt-summary-title,
+.elementor-widget-container .sbt-form-title {
+    margin-top: 0 !important;
+}
+
+/* Override Elementor list styles */
+.elementor-widget-container .sbt-highlights-list,
+.elementor-widget-container .sbt-included-list {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* =======================
+   ACCESSIBILITY FIXES
+   ======================= */
+
+/* Focus states */
+.sbt-btn:focus,
+.sbt-form-input:focus,
+.sbt-form-textarea:focus,
+.sbt-form-select:focus,
+.sbt-calendar-day:focus {
+    outline: 3px solid rgba(59, 130, 246, 0.5) !important;
+    outline-offset: 2px !important;
+}
+
+/* Screen reader only text */
+.sbt-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+}
+
+/* =======================
+   PRINT STYLES
+   ======================= */
+
+@media print {
+    .sbt-confirmation-actions,
+    .sbt-export-pdf,
+    .sbt-print-confirmation {
+        display: none !important;
+    }
+
+    .sbt-booking-confirmation {
+        box-shadow: none !important;
+    }
+
+    .sbt-confirmation-section {
+        page-break-inside: avoid !important;
+    }
+}

@@ -170,88 +170,169 @@ class SBT_Availability {
     public function get_available_dates($tour_id, $month) {
         global $wpdb;
         $table = $wpdb->prefix . 'sbt_availability';
-        
+
         // Parse month (format: YYYY-MM)
         $start_date = $month . '-01';
         $end_date = date('Y-m-t', strtotime($start_date));
-        
+
         // Get tour configuration
         $max_capacity = get_field('tour_max_capacity', $tour_id);
         $available_days = get_field('tour_available_days', $tour_id);
         $blackout_dates = get_field('tour_blackout_dates', $tour_id) ?: [];
-        
+        $custom_availability_ranges = get_field('custom_availability_ranges', $tour_id) ?: [];
+        $availability_overrides = get_field('availability_overrides', $tour_id) ?: [];
+
         // Get booked dates from database
         $booked_dates = $wpdb->get_results($wpdb->prepare(
-            "SELECT tour_date, booked_count, status FROM $table 
+            "SELECT tour_date, booked_count, status FROM $table
              WHERE tour_id = %d AND tour_date BETWEEN %s AND %s",
             $tour_id,
             $start_date,
             $end_date
         ), OBJECT_K);
-        
+
         $result = [];
         $current_date = strtotime($start_date);
         $end_timestamp = strtotime($end_date);
-        
+
         while ($current_date <= $end_timestamp) {
             $date_string = date('Y-m-d', $current_date);
             $day_of_week = strtolower(date('l', $current_date));
-            
+
             // Skip if not in future
             if ($current_date < strtotime('today')) {
                 $current_date = strtotime('+1 day', $current_date);
                 continue;
             }
-            
-            // Check if day of week is available
-            if (!in_array($day_of_week, $available_days)) {
-                $current_date = strtotime('+1 day', $current_date);
-                continue;
-            }
-            
-            // Check blackout dates
-            $is_blackout = false;
-            foreach ($blackout_dates as $blackout) {
-                if ($blackout['blackout_date'] === $date_string) {
-                    $is_blackout = true;
-                    break;
+
+            // Check for availability overrides first (highest priority)
+            $override_found = false;
+            if (is_array($availability_overrides)) {
+                foreach ($availability_overrides as $override) {
+                    if (isset($override['override_date']) && $override['override_date'] === $date_string) {
+                        $override_found = true;
+                        $override_status = isset($override['override_status']) ? $override['override_status'] : 'available';
+                        $override_capacity = isset($override['override_capacity']) ? intval($override['override_capacity']) : $max_capacity;
+
+                        // Get booking count for this date
+                        $booked_count = isset($booked_dates[$date_string]) ? $booked_dates[$date_string]->booked_count : 0;
+
+                        if ($override_status === 'blocked') {
+                            $result[$date_string] = [
+                                'date' => $date_string,
+                                'status' => 'blocked',
+                                'remaining' => 0,
+                                'almost_full' => false
+                            ];
+                        } else {
+                            $remaining = $override_capacity - $booked_count;
+                            $status = $remaining <= 0 ? 'full' : 'available';
+                            $result[$date_string] = [
+                                'date' => $date_string,
+                                'status' => $status,
+                                'remaining' => max(0, $remaining),
+                                'almost_full' => $remaining > 0 && $remaining <= 5
+                            ];
+                        }
+                        break;
+                    }
                 }
             }
-            
-            if ($is_blackout) {
-                $result[$date_string] = [
-                    'date' => $date_string,
-                    'status' => 'blocked',
-                    'remaining' => 0,
-                    'almost_full' => false
-                ];
-                $current_date = strtotime('+1 day', $current_date);
-                continue;
+
+            if (!$override_found) {
+                // Check if date falls within custom availability ranges
+                $in_custom_range = false;
+                if (is_array($custom_availability_ranges)) {
+                    foreach ($custom_availability_ranges as $range) {
+                        if (isset($range['start_date']) && isset($range['end_date'])) {
+                            $range_start = strtotime($range['start_date']);
+                            $range_end = strtotime($range['end_date']);
+
+                            if ($current_date >= $range_start && $current_date <= $range_end) {
+                                $in_custom_range = true;
+                                $range_status = isset($range['range_status']) ? $range['range_status'] : 'available';
+                                $range_capacity = isset($range['range_capacity']) ? intval($range['range_capacity']) : $max_capacity;
+
+                                // Get booking count for this date
+                                $booked_count = isset($booked_dates[$date_string]) ? $booked_dates[$date_string]->booked_count : 0;
+
+                                if ($range_status === 'blocked') {
+                                    $result[$date_string] = [
+                                        'date' => $date_string,
+                                        'status' => 'blocked',
+                                        'remaining' => 0,
+                                        'almost_full' => false
+                                    ];
+                                } else {
+                                    $remaining = $range_capacity - $booked_count;
+                                    $status = $remaining <= 0 ? 'full' : 'available';
+                                    $result[$date_string] = [
+                                        'date' => $date_string,
+                                        'status' => $status,
+                                        'remaining' => max(0, $remaining),
+                                        'almost_full' => $remaining > 0 && $remaining <= 5
+                                    ];
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!$in_custom_range) {
+                    // Check if day of week is available
+                    if (is_array($available_days) && !empty($available_days) && !in_array($day_of_week, $available_days)) {
+                        $current_date = strtotime('+1 day', $current_date);
+                        continue;
+                    }
+
+                    // Check blackout dates
+                    $is_blackout = false;
+                    if (is_array($blackout_dates)) {
+                        foreach ($blackout_dates as $blackout) {
+                            if (isset($blackout['blackout_date']) && $blackout['blackout_date'] === $date_string) {
+                                $is_blackout = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if ($is_blackout) {
+                        $result[$date_string] = [
+                            'date' => $date_string,
+                            'status' => 'blocked',
+                            'remaining' => 0,
+                            'almost_full' => false
+                        ];
+                        $current_date = strtotime('+1 day', $current_date);
+                        continue;
+                    }
+
+                    // Check database for booking status
+                    if (isset($booked_dates[$date_string])) {
+                        $row = $booked_dates[$date_string];
+                        $remaining = $row->max_capacity - $row->booked_count;
+
+                        $result[$date_string] = [
+                            'date' => $date_string,
+                            'status' => $row->status,
+                            'remaining' => max(0, $remaining),
+                            'almost_full' => $remaining > 0 && $remaining <= 5
+                        ];
+                    } else {
+                        $result[$date_string] = [
+                            'date' => $date_string,
+                            'status' => 'available',
+                            'remaining' => $max_capacity,
+                            'almost_full' => false
+                        ];
+                    }
+                }
             }
-            
-            // Check database for booking status
-            if (isset($booked_dates[$date_string])) {
-                $row = $booked_dates[$date_string];
-                $remaining = $row->max_capacity - $row->booked_count;
-                
-                $result[$date_string] = [
-                    'date' => $date_string,
-                    'status' => $row->status,
-                    'remaining' => max(0, $remaining),
-                    'almost_full' => $remaining > 0 && $remaining <= 5
-                ];
-            } else {
-                $result[$date_string] = [
-                    'date' => $date_string,
-                    'status' => 'available',
-                    'remaining' => $max_capacity,
-                    'almost_full' => false
-                ];
-            }
-            
+
             $current_date = strtotime('+1 day', $current_date);
         }
-        
+
         return array_values($result);
     }
     

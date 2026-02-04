@@ -217,6 +217,7 @@
     font-weight: 600;
     color: var(--sbt-gray-700);
     font-size: 14px;
+    text-wrap: nowrap;
 }
 
 .sbt-filter-label svg {
@@ -548,7 +549,7 @@
 }
 
 .sbt-section-heading {
-    font-size: 24px;
+    font-size: 24px !important;
     font-weight: 700;
     color: var(--sbt-gray-900);
     margin: 0 0 20px 0;
@@ -780,7 +781,6 @@
 }
 
 .sbt-booking-price {
-    text-align: center;
     padding: 24px;
     background: linear-gradient(135deg, var(--sbt-gray-50) 0%, var(--sbt-white) 100%);
     border-radius: 12px;
@@ -813,7 +813,7 @@
 }
 
 .sbt-availability-title {
-    font-size: 16px;
+    font-size: 16px !important;
     font-weight: 700;
     color: var(--sbt-gray-900);
     margin: 0 0 16px 0;
@@ -907,6 +907,7 @@
 
 .sbt-step-number {
     width: 48px;
+    min-width: 48px;
     height: 48px;
     border-radius: 50%;
     background: var(--sbt-gray-200);
@@ -949,6 +950,7 @@
     font-size: 14px;
     color: var(--sbt-gray-600);
     font-weight: 500;
+    text-wrap: nowrap;
 }
 
 .sbt-booking-step.active .sbt-step-label {
@@ -2083,7 +2085,6 @@
     }
 
     .sbt-booking-steps {
-        flex-direction: column;
         gap: 12px;
     }
 
@@ -2123,7 +2124,7 @@
     }
 
     .sbt-step-body {
-        padding: 24px 20px;
+        padding: 24px 0 !important;
     }
 
     .sbt-passenger-counter {

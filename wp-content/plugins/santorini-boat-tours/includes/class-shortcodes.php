@@ -591,7 +591,9 @@ class SBT_Shortcodes
                                         <span class="sbt-price-label">From</span>
                                         <span class="sbt-price-amount">€<?php echo number_format($price, 0); ?></span>
                                         <?php if ($price_per_person): ?>
-                                            <span class="sbt-price-per">/person</span>
+                                            <span class="sbt-price-per">/day/person</span>
+                                        <?php else: ?>
+                                            <span class="sbt-price-per">/day</span>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
@@ -847,12 +849,14 @@ class SBT_Shortcodes
                         <div class="sbt-booking-card-sticky">
                             <div class="sbt-booking-card">
                                 <?php if ($price): ?>
-                                    <div class="sbt-booking-price">
-                                        <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
-                                        <?php if ($price_per_person): ?>
-                                            <span class="sbt-price-label">per person</span>
-                                        <?php endif; ?>
-                                    </div>
+                            <div class="sbt-booking-price">
+                    <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
+                    <?php if ($price_per_person): ?>
+                        <span class="sbt-price-label">per day per passenger</span>
+                    <?php else: ?>
+                        <span class="sbt-price-label">per day (total)</span>
+                    <?php endif; ?>
+                </div>
                                 <?php endif; ?>
 
                                 <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">

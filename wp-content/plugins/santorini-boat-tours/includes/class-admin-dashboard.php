@@ -26,6 +26,20 @@ class SBT_Admin_Dashboard {
         add_action('manage_sbt_booking_posts_custom_column', [$this, 'booking_column_content'], 10, 2);
         add_filter('manage_sbt_tour_posts_columns', [$this, 'tour_columns']);
         add_action('manage_sbt_tour_posts_custom_column', [$this, 'tour_column_content'], 10, 2);
+
+        // Add quick edit support for booking status
+        add_action('quick_edit_custom_box', [$this, 'booking_quick_edit'], 10, 2);
+        add_action('save_post_sbt_booking', [$this, 'save_booking_status_quick_edit']);
+        add_action('admin_footer', [$this, 'booking_quick_edit_script']);
+
+        // Make status column sortable and editable
+        add_filter('manage_edit-sbt_booking_sortable_columns', [$this, 'booking_sortable_columns']);
+
+        // AJAX handlers for booking actions
+        add_action('wp_ajax_sbt_update_booking_status', [$this, 'ajax_update_booking_status']);
+        add_action('wp_ajax_sbt_cancel_booking', [$this, 'ajax_cancel_booking']);
+        add_action('wp_ajax_sbt_confirm_booking', [$this, 'ajax_confirm_booking']);
+        add_action('wp_ajax_sbt_refund_booking', [$this, 'ajax_refund_booking']);
     }
     
     public function add_admin_menu() {
@@ -168,6 +182,7 @@ class SBT_Admin_Dashboard {
                     <div class="sbt-stat-content">
                         <h3>Total Revenue</h3>
                         <p class="sbt-stat-number"><?php echo esc_html(get_option('sbt_currency_symbol', '€') . number_format($total_revenue, 2)); ?></p>
+                        <p style="font-size: 12px; margin-top: 5px; color: var(--sbt-gray-600);">From confirmed bookings</p>
                     </div>
                 </div>
             </div>
@@ -469,7 +484,14 @@ class SBT_Admin_Dashboard {
                 echo esc_html(get_field('booking_passengers', $post_id));
                 break;
             case 'amount':
-                echo esc_html(get_option('sbt_currency_symbol', '€') . number_format(get_field('booking_total_amount', $post_id), 2));
+                $total = get_field('booking_total_amount', $post_id);
+                $passengers = get_field('booking_passengers', $post_id);
+                $dates = get_field('booking_dates', $post_id) ?: [get_field('booking_date', $post_id)];
+                $num_days = count($dates);
+                echo '<strong>' . esc_html(get_option('sbt_currency_symbol', '€') . number_format($total, 2)) . '</strong>';
+                if ($num_days > 1 || $passengers > 1) {
+                    echo '<br><small>' . $num_days . ' day' . ($num_days > 1 ? 's' : '') . ' × ' . $passengers . ' pax</small>';
+                }
                 break;
             case 'status':
                 $status = get_field('booking_status', $post_id);
@@ -480,9 +502,118 @@ class SBT_Admin_Dashboard {
                     'completed' => '#6b7280',
                     'refunded' => '#8b5cf6'
                 ];
-                echo '<span style="background: ' . esc_attr($colors[$status] ?? '#6b7280') . '; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; text-transform: uppercase;">' . esc_html($status) . '</span>';
+                // Add data attribute for quick edit
+                echo '<span class="sbt-booking-status-badge" data-status="' . esc_attr($status) . '" style="background: ' . esc_attr($colors[$status] ?? '#6b7280') . '; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer;" title="Click row actions to quick edit">' . esc_html($status) . '</span>';
                 break;
         }
+    }
+
+    public function booking_quick_edit($column_name, $post_type) {
+        if ($post_type !== 'sbt_booking' || $column_name !== 'status') {
+            return;
+        }
+
+        static $printed = false;
+        if ($printed) {
+            return;
+        }
+        $printed = true;
+
+        ?>
+        <fieldset class="inline-edit-col-right">
+            <div class="inline-edit-col">
+                <label>
+                    <span class="title">Booking Status</span>
+                    <span class="input-text-wrap">
+                        <select name="booking_status" style="width: 100%;">
+                            <option value="">— No Change —</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="completed">Completed</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                    </span>
+                </label>
+            </div>
+        </fieldset>
+        <?php
+    }
+
+    public function save_booking_status_quick_edit($post_id) {
+        // Check if quick edit or bulk edit
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        if (isset($_POST['booking_status']) && !empty($_POST['booking_status'])) {
+            $status = sanitize_text_field($_POST['booking_status']);
+            $allowed_statuses = ['pending', 'confirmed', 'cancelled', 'completed', 'refunded'];
+
+            if (in_array($status, $allowed_statuses)) {
+                update_field('booking_status', $status, $post_id);
+
+                // Log the status change
+                $current_user = wp_get_current_user();
+                $log = get_post_meta($post_id, '_booking_log', true);
+                if (!is_array($log)) {
+                    $log = [];
+                }
+                $log[] = [
+                    'timestamp' => current_time('mysql'),
+                    'action' => 'status_changed',
+                    'note' => 'Status changed to ' . $status . ' via quick edit',
+                    'user_id' => $current_user->ID,
+                    'user_name' => $current_user->display_name
+                ];
+                update_post_meta($post_id, '_booking_log', $log);
+            }
+        }
+    }
+
+    public function booking_quick_edit_script() {
+        global $current_screen;
+
+        if ($current_screen->post_type !== 'sbt_booking') {
+            return;
+        }
+
+        ?>
+        <script type="text/javascript">
+        (function($) {
+            // Populate quick edit fields with current values
+            var $wp_inline_edit = inlineEditPost.edit;
+            inlineEditPost.edit = function(id) {
+                $wp_inline_edit.apply(this, arguments);
+
+                var postId = 0;
+                if (typeof(id) == 'object') {
+                    postId = parseInt(this.getId(id));
+                }
+
+                if (postId > 0) {
+                    var $row = $('#post-' + postId);
+                    var status = $row.find('.sbt-booking-status-badge').data('status');
+
+                    if (status) {
+                        $('#edit-' + postId + ' select[name="booking_status"]').val(status);
+                    }
+                }
+            };
+        })(jQuery);
+        </script>
+        <?php
+    }
+
+    public function booking_sortable_columns($columns) {
+        $columns['status'] = 'booking_status';
+        $columns['date'] = 'booking_date';
+        $columns['amount'] = 'booking_total_amount';
+        return $columns;
     }
     
     public function tour_columns($columns) {
@@ -509,8 +640,175 @@ class SBT_Admin_Dashboard {
                 $price = get_field('tour_price', $post_id);
                 $per_person = get_field('tour_price_per_person', $post_id);
                 echo esc_html(get_option('sbt_currency_symbol', '€') . number_format($price, 2));
-                echo $per_person ? ' <small>/person</small>' : '';
+                echo $per_person ? ' <small>/day/person</small>' : ' <small>/day</small>';
                 break;
         }
+    }
+
+    /**
+     * AJAX handler for updating booking status
+     */
+    public function ajax_update_booking_status() {
+        check_ajax_referer('sbt-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $booking_id = intval($_POST['booking_id']);
+        $status = sanitize_text_field($_POST['status']);
+
+        $allowed_statuses = ['pending', 'confirmed', 'cancelled', 'completed', 'refunded'];
+        if (!in_array($status, $allowed_statuses)) {
+            wp_send_json_error('Invalid status');
+        }
+
+        update_field('booking_status', $status, $booking_id);
+
+        // Log the status change
+        $current_user = wp_get_current_user();
+        $log = get_post_meta($booking_id, '_booking_log', true);
+        if (!is_array($log)) {
+            $log = [];
+        }
+        $log[] = [
+            'timestamp' => current_time('mysql'),
+            'action' => 'status_changed',
+            'note' => 'Status changed to ' . $status,
+            'user_id' => $current_user->ID,
+            'user_name' => $current_user->display_name
+        ];
+        update_post_meta($booking_id, '_booking_log', $log);
+
+        wp_send_json_success([
+            'message' => 'Status updated successfully',
+            'status' => $status
+        ]);
+    }
+
+    /**
+     * AJAX handler for cancelling booking
+     */
+    public function ajax_cancel_booking() {
+        check_ajax_referer('sbt-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $booking_id = intval($_POST['booking_id']);
+
+        // Get booking details
+        $tour_ids = get_field('booking_tours', $booking_id) ?: [get_field('booking_tour', $booking_id)];
+        $dates = get_field('booking_dates', $booking_id) ?: [get_field('booking_date', $booking_id)];
+        $passengers = get_field('booking_passengers', $booking_id);
+
+        // Release capacity
+        $availability = SBT_Availability::instance();
+        foreach ($tour_ids as $tour_id) {
+            foreach ($dates as $date) {
+                $availability->release_capacity($tour_id, $date, $passengers);
+            }
+        }
+
+        update_field('booking_status', 'cancelled', $booking_id);
+
+        // Log the cancellation
+        $current_user = wp_get_current_user();
+        $log = get_post_meta($booking_id, '_booking_log', true);
+        if (!is_array($log)) {
+            $log = [];
+        }
+        $log[] = [
+            'timestamp' => current_time('mysql'),
+            'action' => 'cancelled',
+            'note' => 'Booking cancelled by admin',
+            'user_id' => $current_user->ID,
+            'user_name' => $current_user->display_name
+        ];
+        update_post_meta($booking_id, '_booking_log', $log);
+
+        wp_send_json_success('Booking cancelled successfully');
+    }
+
+    /**
+     * AJAX handler for confirming booking
+     */
+    public function ajax_confirm_booking() {
+        check_ajax_referer('sbt-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $booking_id = intval($_POST['booking_id']);
+
+        update_field('booking_status', 'confirmed', $booking_id);
+
+        // Log the confirmation
+        $current_user = wp_get_current_user();
+        $log = get_post_meta($booking_id, '_booking_log', true);
+        if (!is_array($log)) {
+            $log = [];
+        }
+        $log[] = [
+            'timestamp' => current_time('mysql'),
+            'action' => 'confirmed',
+            'note' => 'Booking confirmed by admin',
+            'user_id' => $current_user->ID,
+            'user_name' => $current_user->display_name
+        ];
+        update_post_meta($booking_id, '_booking_log', $log);
+
+        // Send confirmation email
+        $email = SBT_Email_Notifications::instance();
+        $email->send_booking_confirmed($booking_id);
+
+        wp_send_json_success('Booking confirmed successfully');
+    }
+
+    /**
+     * AJAX handler for refunding booking
+     */
+    public function ajax_refund_booking() {
+        check_ajax_referer('sbt-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $booking_id = intval($_POST['booking_id']);
+
+        // Get booking details
+        $tour_ids = get_field('booking_tours', $booking_id) ?: [get_field('booking_tour', $booking_id)];
+        $dates = get_field('booking_dates', $booking_id) ?: [get_field('booking_date', $booking_id)];
+        $passengers = get_field('booking_passengers', $booking_id);
+
+        // Release capacity
+        $availability = SBT_Availability::instance();
+        foreach ($tour_ids as $tour_id) {
+            foreach ($dates as $date) {
+                $availability->release_capacity($tour_id, $date, $passengers);
+            }
+        }
+
+        update_field('booking_status', 'refunded', $booking_id);
+
+        // Log the refund
+        $current_user = wp_get_current_user();
+        $log = get_post_meta($booking_id, '_booking_log', true);
+        if (!is_array($log)) {
+            $log = [];
+        }
+        $log[] = [
+            'timestamp' => current_time('mysql'),
+            'action' => 'refunded',
+            'note' => 'Booking refunded by admin',
+            'user_id' => $current_user->ID,
+            'user_name' => $current_user->display_name
+        ];
+        update_post_meta($booking_id, '_booking_log', $log);
+
+        wp_send_json_success('Booking refunded successfully');
     }
 }

@@ -124,7 +124,15 @@ class Santorini_Boat_Tours {
             [],
             SBT_VERSION
         );
-        
+
+        // Enqueue frontend overrides (higher priority for Elementor compatibility)
+        wp_enqueue_style(
+            'sbt-frontend-overrides',
+            SBT_PLUGIN_URL . 'assets/css/frontend-overrides.css',
+            ['sbt-frontend'],
+            SBT_VERSION
+        );
+
         // Enqueue frontend scripts
         wp_enqueue_script(
             'sbt-frontend',

@@ -80,6 +80,8 @@ class SBT_Booking_Manager {
             }
 
             // Calculate total amount for all tours and dates
+            // Formula: price × passengers × days (for per-person pricing)
+            // or: price × days (for per-tour pricing)
             $total_amount = 0;
             $tour_titles = [];
             foreach ($tour_ids as $tour_id) {
@@ -87,10 +89,12 @@ class SBT_Booking_Manager {
                 $price_per_person = get_field('tour_price_per_person', $tour_id);
                 $tour_titles[] = get_the_title($tour_id);
 
-                // Calculate for this tour across all dates
+                // Calculate for this tour: price × days × passengers (if per person)
                 if ($price_per_person) {
+                    // Per day per passenger pricing
                     $total_amount += ($tour_price * $data['passengers'] * count($dates));
                 } else {
+                    // Per day pricing (flat rate)
                     $total_amount += ($tour_price * count($dates));
                 }
             }
