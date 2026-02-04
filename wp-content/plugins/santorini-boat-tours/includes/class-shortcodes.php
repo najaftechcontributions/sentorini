@@ -45,16 +45,31 @@ class SBT_Shortcodes {
     /**
      * Booking Widget Shortcode
      * Usage: [sbt_booking_widget] or [sbt_booking_form]
-     * URL Parameters: ?tour=morning&date=2024-01-15&passengers=2&tour_id=123
+     * URL Parameters: ?id=123 or ?tour_id=123 or ?tour=morning&date=2024-01-15&passengers=2
      */
     public function booking_widget($atts) {
         $atts = shortcode_atts([
             'show_steps' => 'true',
-            'tour' => $this->get_url_param('tour'),
-            'tour_id' => $this->get_url_param('tour_id'),
-            'date' => $this->get_url_param('date'),
-            'passengers' => $this->get_url_param('passengers', '1')
+            'tour' => '',
+            'tour_id' => '',
+            'date' => '',
+            'passengers' => '1'
         ], $atts);
+
+        // Get values from shortcode attributes or URL parameters
+        if (empty($atts['tour'])) {
+            $atts['tour'] = $this->get_url_param('tour');
+        }
+        if (empty($atts['tour_id'])) {
+            // Check 'id' parameter first, then 'tour_id' for backward compatibility
+            $atts['tour_id'] = $this->get_url_param('id', $this->get_url_param('tour_id'));
+        }
+        if (empty($atts['date'])) {
+            $atts['date'] = $this->get_url_param('date');
+        }
+        if ($atts['passengers'] === '1') {
+            $atts['passengers'] = $this->get_url_param('passengers', '1');
+        }
 
         // Convert tour type to tour ID if provided
         $preselected_tour_id = 0;
@@ -324,12 +339,17 @@ class SBT_Shortcodes {
      */
     public function tour_list($atts) {
         $atts = shortcode_atts([
-            'type' => $this->get_url_param('tour', $this->get_url_param('tour_type', '')),
+            'type' => '',
             'columns' => '3',
             'limit' => -1,
             'show_filters' => 'true',
             'view_mode' => 'grid' // grid or list
         ], $atts);
+
+        // If no type from shortcode attribute, check URL parameters
+        if (empty($atts['type'])) {
+            $atts['type'] = $this->get_url_param('tour', $this->get_url_param('tour_type', ''));
+        }
 
         $args = [
             'post_type' => 'sbt_tour',
@@ -497,30 +517,40 @@ class SBT_Shortcodes {
     /**
      * Single Tour Card Shortcode
      * Usage: [sbt_tour_card id="123"] or [sbt_single_tour]
-     * URL Parameters: ?tour_id=123 or ?tour=morning
+     * URL Parameters: ?id=123 or ?tour_id=123 or ?tour=morning
      */
     public function tour_card($atts) {
         $atts = shortcode_atts([
-            'id' => $this->get_url_param('tour_id', 0),
-            'tour_type' => $this->get_url_param('tour', '')
+            'id' => 0,
+            'tour_type' => ''
         ], $atts);
 
         $tour_id = intval($atts['id']);
 
-        // If no tour_id but tour_type is provided, find tour by type
-        if (!$tour_id && !empty($atts['tour_type'])) {
-            $tours = get_posts([
-                'post_type' => 'sbt_tour',
-                'posts_per_page' => 1,
-                'meta_query' => [
-                    [
-                        'key' => 'tour_type',
-                        'value' => $atts['tour_type']
+        // If no tour_id from shortcode attribute, check URL parameters
+        if (!$tour_id) {
+            // Check for 'id' parameter first, then 'tour_id' for backward compatibility
+            $tour_id = intval($this->get_url_param('id', $this->get_url_param('tour_id', 0)));
+        }
+
+        // If still no tour_id, check for tour_type
+        if (!$tour_id) {
+            $tour_type = !empty($atts['tour_type']) ? $atts['tour_type'] : $this->get_url_param('tour', '');
+
+            if (!empty($tour_type)) {
+                $tours = get_posts([
+                    'post_type' => 'sbt_tour',
+                    'posts_per_page' => 1,
+                    'meta_query' => [
+                        [
+                            'key' => 'tour_type',
+                            'value' => $tour_type
+                        ]
                     ]
-                ]
-            ]);
-            if (!empty($tours)) {
-                $tour_id = $tours[0]->ID;
+                ]);
+                if (!empty($tours)) {
+                    $tour_id = $tours[0]->ID;
+                }
             }
         }
 
@@ -758,13 +788,22 @@ class SBT_Shortcodes {
     /**
      * Availability Calendar Shortcode
      * Usage: [sbt_availability_calendar]
-     * URL Parameters: ?date=2024-01-15
+     * URL Parameters: ?date=2024-01-15&id=123
      */
     public function availability_calendar($atts) {
         $atts = shortcode_atts([
-            'date' => $this->get_url_param('date'),
-            'tour_id' => $this->get_url_param('tour_id'),
+            'date' => '',
+            'tour_id' => '',
         ], $atts);
+
+        // If no values from shortcode attributes, check URL parameters
+        if (empty($atts['date'])) {
+            $atts['date'] = $this->get_url_param('date');
+        }
+        if (empty($atts['tour_id'])) {
+            // Check 'id' parameter first, then 'tour_id' for backward compatibility
+            $atts['tour_id'] = $this->get_url_param('id', $this->get_url_param('tour_id'));
+        }
 
         ob_start();
         ?>

@@ -174,6 +174,7 @@ class SBT_URL_Handler {
         $params = [
             'tour' => isset($_GET['tour']) ? sanitize_text_field($_GET['tour']) : '',
             'tour_type' => isset($_GET['tour_type']) ? sanitize_text_field($_GET['tour_type']) : '',
+            'id' => isset($_GET['id']) ? absint($_GET['id']) : 0,
             'tour_id' => isset($_GET['tour_id']) ? absint($_GET['tour_id']) : 0,
             'date' => isset($_GET['date']) ? sanitize_text_field($_GET['date']) : '',
             'passengers' => isset($_GET['passengers']) ? absint($_GET['passengers']) : 1
