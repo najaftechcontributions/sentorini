@@ -19,7 +19,7 @@ class SBT_Shortcodes {
     }
     
     private function __construct() {
-        add_action('init', [$this, 'register_shortcodes']);
+        $this->register_shortcodes();
     }
     
     public function register_shortcodes() {
