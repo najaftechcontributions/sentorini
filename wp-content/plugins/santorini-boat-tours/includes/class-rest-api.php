@@ -146,19 +146,58 @@ class SBT_REST_API {
     
     private function get_booking_args() {
         return [
+            // Support both single tour_id and multiple tour_ids
             'tour_id' => [
-                'required' => true,
+                'required' => false,
                 'validate_callback' => function($param) {
-                    return is_numeric($param);
+                    return empty($param) || is_numeric($param);
                 },
                 'sanitize_callback' => 'absint'
             ],
-            'date' => [
-                'required' => true,
+            'tour_ids' => [
+                'required' => false,
                 'validate_callback' => function($param) {
-                    return preg_match('/^\d{4}-\d{2}-\d{2}$/', $param);
+                    if (empty($param)) return true;
+                    if (is_array($param)) {
+                        return !empty(array_filter($param, 'is_numeric'));
+                    }
+                    return false;
+                },
+                'sanitize_callback' => function($param) {
+                    if (is_array($param)) {
+                        return array_map('absint', $param);
+                    }
+                    return [];
+                }
+            ],
+            // Support both single date and multiple dates
+            'date' => [
+                'required' => false,
+                'validate_callback' => function($param) {
+                    return empty($param) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $param);
                 },
                 'sanitize_callback' => 'sanitize_text_field'
+            ],
+            'dates' => [
+                'required' => false,
+                'validate_callback' => function($param) {
+                    if (empty($param)) return true;
+                    if (is_array($param)) {
+                        foreach ($param as $date) {
+                            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+                'sanitize_callback' => function($param) {
+                    if (is_array($param)) {
+                        return array_map('sanitize_text_field', $param);
+                    }
+                    return [];
+                }
             ],
             'passengers' => [
                 'required' => true,
@@ -166,6 +205,18 @@ class SBT_REST_API {
                     return is_numeric($param) && $param > 0;
                 },
                 'sanitize_callback' => 'absint'
+            ],
+            'destinations' => [
+                'required' => false,
+                'validate_callback' => function($param) {
+                    return empty($param) || is_array($param);
+                },
+                'sanitize_callback' => function($param) {
+                    if (is_array($param)) {
+                        return array_map('sanitize_text_field', array_filter($param));
+                    }
+                    return [];
+                }
             ],
             'first_name' => [
                 'required' => true,
@@ -308,19 +359,47 @@ class SBT_REST_API {
                 return new WP_Error('recaptcha_failed', 'reCAPTCHA verification failed', ['status' => 403]);
             }
         }
-        
+
         // Rate limiting check
         if (!$this->check_rate_limit($request->get_param('email'))) {
             return new WP_Error('rate_limit', 'Too many booking attempts. Please try again later.', ['status' => 429]);
         }
-        
+
+        // Normalize booking data to support both single and multi-booking
+        $params = $request->get_params();
+
+        // Normalize tour_ids - convert single tour_id to array
+        if (!empty($params['tour_ids']) && is_array($params['tour_ids'])) {
+            $params['tour_ids'] = array_values(array_filter($params['tour_ids']));
+        } elseif (!empty($params['tour_id'])) {
+            $params['tour_ids'] = [$params['tour_id']];
+        } else {
+            return new WP_Error('missing_tour', 'Please select at least one tour', ['status' => 400]);
+        }
+
+        // Normalize dates - convert single date to array
+        if (!empty($params['dates']) && is_array($params['dates'])) {
+            $params['dates'] = array_values(array_filter($params['dates']));
+        } elseif (!empty($params['date'])) {
+            $params['dates'] = [$params['date']];
+        } else {
+            return new WP_Error('missing_date', 'Please select at least one date', ['status' => 400]);
+        }
+
+        // Ensure destinations is an array
+        if (!empty($params['destinations']) && !is_array($params['destinations'])) {
+            $params['destinations'] = [$params['destinations']];
+        } elseif (empty($params['destinations'])) {
+            $params['destinations'] = [];
+        }
+
         $booking_manager = SBT_Booking_Manager::instance();
-        $result = $booking_manager->create_booking($request->get_params());
-        
+        $result = $booking_manager->create_booking($params);
+
         if (is_wp_error($result)) {
             return $result;
         }
-        
+
         return rest_ensure_response($result);
     }
     

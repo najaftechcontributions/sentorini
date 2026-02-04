@@ -17,12 +17,17 @@
 
         bindEvents: function() {
             $(document).on('click', '.sbt-tour-card-archive.sbt-tour-option', this.selectTour);
+            $(document).on('change', '.sbt-tour-checkbox, .sbt-tour-radio', this.handleTourSelection);
             $(document).on('click', '.sbt-tour-option', this.selectTour);
             $(document).on('click', '.sbt-calendar-day:not(.disabled):not(.blocked)', this.selectDate);
             $(document).on('click', '.sbt-counter-btn', this.updatePassengerCount);
             $(document).on('submit', '.sbt-booking-form', this.submitBooking);
             $(document).on('click', '.sbt-step-next', this.nextStep);
             $(document).on('click', '.sbt-step-prev', this.prevStep);
+            $(document).on('click', '.sbt-booking-step.completed', this.toggleStep);
+            $(document).on('click', '.sbt-add-destination', this.addDestination);
+            $(document).on('click', '.sbt-remove-destination', this.removeDestination);
+            $(document).on('click', '.sbt-download-summary', this.downloadSummaryPDF);
             $(document).on('click', '.sbt-gallery-image', this.openLightbox);
             $(document).on('click', '.sbt-lightbox-close', this.closeLightbox);
             $(document).on('click', '.sbt-lightbox-overlay', this.closeLightbox);
@@ -171,9 +176,44 @@
         initBookingWidget: function() {
             const $widget = $('.sbt-booking-widget');
             if (!$widget.length) return;
-            
+
             $widget.data('currentStep', 1);
             this.showStep(1);
+
+            // Initialize arrays for multi-selection
+            SBT.selectedTours = [];
+            SBT.selectedDates = [];
+            SBT.destinations = [''];
+            SBT.destinationCount = 1;
+        },
+
+        handleTourSelection: function(e) {
+            const $input = $(this);
+            const $card = $input.closest('.sbt-tour-card-archive');
+            const tourId = $card.data('tour-id');
+
+            if ($input.hasClass('sbt-tour-checkbox')) {
+                // Handle checkbox (multi-select)
+                if ($input.is(':checked')) {
+                    $card.addClass('selected');
+                    if (!SBT.selectedTours.includes(tourId)) {
+                        SBT.selectedTours.push(tourId);
+                    }
+                } else {
+                    $card.removeClass('selected');
+                    SBT.selectedTours = SBT.selectedTours.filter(id => id !== tourId);
+                }
+            } else if ($input.hasClass('sbt-tour-radio')) {
+                // Handle radio (single select)
+                $('.sbt-tour-card-archive.sbt-tour-option').removeClass('selected');
+                $card.addClass('selected');
+                SBT.selectedTours = [tourId];
+                SBT.selectedTourId = tourId;
+            }
+
+            // Update step validation
+            const hasSelection = SBT.selectedTours.length > 0;
+            $('.sbt-step-content[data-step="1"] .sbt-step-next').prop('disabled', !hasSelection);
         },
         
         initCalendar: function() {
@@ -341,17 +381,110 @@
         
         selectDate: function(e) {
             const $day = $(this);
+            const $calendar = $day.closest('.sbt-calendar');
+            const isMultiSelect = $calendar.data('multi-select') === 'true';
             const date = $day.data('date');
-            
-            $('.sbt-calendar-day').removeClass('selected');
-            $day.addClass('selected');
-            
-            SBT.selectedDate = date;
-            
-            // Check availability for this date
-            if (SBT.selectedTourId && SBT.passengerCount) {
-                SBT.checkAvailability(SBT.selectedTourId, date, SBT.passengerCount);
+
+            if (!isMultiSelect) {
+                // Single date selection
+                $('.sbt-calendar-day').removeClass('selected');
+                $day.addClass('selected');
+                SBT.selectedDate = date;
+                SBT.selectedDates = [date];
+
+                // Check availability for this date
+                if (SBT.selectedTourId && SBT.passengerCount) {
+                    SBT.checkAvailability(SBT.selectedTourId, date, SBT.passengerCount);
+                }
+            } else {
+                // Multi-date selection (consecutive dates only)
+                if (SBT.selectedDates.length === 0) {
+                    // First date
+                    SBT.selectedDates = [date];
+                    $day.addClass('selected range-start range-end');
+                } else if (SBT.selectedDates.length === 1) {
+                    // Second date - establish range
+                    const firstDate = new Date(SBT.selectedDates[0]);
+                    const secondDate = new Date(date);
+
+                    if (firstDate.getTime() === secondDate.getTime()) {
+                        // Same date clicked - deselect
+                        SBT.selectedDates = [];
+                        $('.sbt-calendar-day').removeClass('selected range-start range-end in-range');
+                        SBT.updateSelectedDatesSummary();
+                        return;
+                    }
+
+                    // Determine start and end
+                    const startDate = firstDate < secondDate ? firstDate : secondDate;
+                    const endDate = firstDate < secondDate ? secondDate : firstDate;
+
+                    // Get all dates in range
+                    SBT.selectedDates = SBT.getConsecutiveDates(startDate, endDate);
+
+                    // Update calendar display
+                    SBT.highlightDateRange(startDate, endDate);
+                } else {
+                    // Reset and start new selection
+                    SBT.selectedDates = [date];
+                    $('.sbt-calendar-day').removeClass('selected range-start range-end in-range');
+                    $day.addClass('selected range-start range-end');
+                }
+
+                SBT.updateSelectedDatesSummary();
             }
+        },
+
+        getConsecutiveDates: function(startDate, endDate) {
+            const dates = [];
+            const current = new Date(startDate);
+
+            while (current <= endDate) {
+                const dateStr = current.toISOString().split('T')[0];
+                dates.push(dateStr);
+                current.setDate(current.getDate() + 1);
+            }
+
+            return dates;
+        },
+
+        highlightDateRange: function(startDate, endDate) {
+            $('.sbt-calendar-day').removeClass('selected range-start range-end in-range');
+
+            $('.sbt-calendar-day').each(function() {
+                const $day = $(this);
+                const dayDate = new Date($day.data('date'));
+
+                if (dayDate.getTime() === startDate.getTime()) {
+                    $day.addClass('selected range-start');
+                } else if (dayDate.getTime() === endDate.getTime()) {
+                    $day.addClass('selected range-end');
+                } else if (dayDate > startDate && dayDate < endDate) {
+                    $day.addClass('in-range');
+                }
+            });
+        },
+
+        updateSelectedDatesSummary: function() {
+            const $summary = $('.sbt-selected-dates-summary');
+
+            if (SBT.selectedDates.length === 0) {
+                $summary.removeClass('active').html('');
+                return;
+            }
+
+            const datesHtml = SBT.selectedDates.map(date => {
+                const formatted = new Date(date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+                return `<span class="sbt-selected-date-tag">${formatted}</span>`;
+            }).join('');
+
+            $summary.addClass('active').html(`
+                <h4>Selected Dates (${SBT.selectedDates.length} day${SBT.selectedDates.length > 1 ? 's' : ''})</h4>
+                <div class="sbt-selected-dates-list">${datesHtml}</div>
+            `);
         },
         
         updatePassengerCount: function(e) {
@@ -525,23 +658,90 @@
             }
         },
         
+        addDestination: function(e) {
+            e.preventDefault();
+            SBT.destinationCount++;
+
+            const $list = $('.sbt-destinations-list');
+            const isLast = SBT.destinationCount > 1;
+
+            const html = `
+                <div class="sbt-destination-item">
+                    <label class="sbt-form-label">${isLast ? 'Final ' : ''}Destination ${SBT.destinationCount}</label>
+                    <input type="text"
+                           class="sbt-form-input sbt-destination-input"
+                           data-index="${SBT.destinationCount - 1}"
+                           placeholder="e.g., ${SBT.destinationCount === 2 ? 'Ios' : 'Mykonos'}" />
+                    ${SBT.destinationCount > 1 ? '<button type="button" class="sbt-remove-destination">×</button>' : ''}
+                </div>
+            `;
+
+            $list.append(html);
+            SBT.destinations.push('');
+        },
+
+        removeDestination: function(e) {
+            e.preventDefault();
+            const $item = $(this).closest('.sbt-destination-item');
+            const index = $item.find('.sbt-destination-input').data('index');
+
+            $item.remove();
+            SBT.destinations.splice(index, 1);
+            SBT.destinationCount--;
+
+            // Re-index remaining items
+            $('.sbt-destination-input').each(function(idx) {
+                $(this).data('index', idx);
+            });
+        },
+
+        toggleStep: function(e) {
+            const $step = $(this);
+            const stepNum = $step.data('step');
+            const $stepContent = $(`.sbt-step-content[data-step="${stepNum}"]`);
+
+            // Toggle collapsed state
+            if ($stepContent.hasClass('collapsed')) {
+                $('.sbt-step-content').hide().addClass('collapsed');
+                $stepContent.show().removeClass('collapsed');
+
+                // Update active step
+                const $widget = $('.sbt-booking-widget');
+                $widget.data('currentStep', stepNum);
+
+                // Update step indicators
+                $('.sbt-booking-step').removeClass('active');
+                $step.addClass('active');
+            }
+        },
+
         showStep: function(step) {
             // Update step indicators
             $('.sbt-booking-step').each(function(index) {
                 const stepNum = index + 1;
                 $(this).removeClass('active completed');
-                
+
                 if (stepNum === step) {
                     $(this).addClass('active');
                 } else if (stepNum < step) {
                     $(this).addClass('completed');
                 }
             });
-            
-            // Show content for step
-            $('.sbt-step-content').hide();
-            $(`.sbt-step-content[data-step="${step}"]`).show();
-            
+
+            // Show content for step and collapse others
+            $('.sbt-step-content').each(function() {
+                const $content = $(this);
+                const contentStep = parseInt($content.data('step'));
+
+                if (contentStep === step) {
+                    $content.show().removeClass('collapsed');
+                } else if (contentStep < step) {
+                    $content.addClass('collapsed');
+                } else {
+                    $content.hide();
+                }
+            });
+
             // Update summary if on final step
             if (step === 4) {
                 SBT.updateBookingSummary();
@@ -551,18 +751,30 @@
         validateStep: function(step) {
             let isValid = true;
             let message = '';
-            
+
             switch(step) {
                 case 1:
-                    if (!SBT.selectedTourId) {
-                        message = 'Please select a tour';
-                        isValid = false;
+                    if (!SBT.selectedTours || SBT.selectedTours.length === 0) {
+                        // Check if single tour mode with selectedTourId
+                        if (!SBT.selectedTourId) {
+                            message = 'Please select at least one tour';
+                            isValid = false;
+                        } else {
+                            // Convert to array for consistent handling
+                            SBT.selectedTours = [SBT.selectedTourId];
+                        }
                     }
                     break;
                 case 2:
-                    if (!SBT.selectedDate) {
-                        message = 'Please select a date';
-                        isValid = false;
+                    if (!SBT.selectedDates || SBT.selectedDates.length === 0) {
+                        // Check if single date mode with selectedDate
+                        if (!SBT.selectedDate) {
+                            message = 'Please select at least one date';
+                            isValid = false;
+                        } else {
+                            // Convert to array for consistent handling
+                            SBT.selectedDates = [SBT.selectedDate];
+                        }
                     }
                     break;
                 case 3:
@@ -570,40 +782,92 @@
                         message = 'Please select number of passengers';
                         isValid = false;
                     }
+
+                    // Collect destination values from inputs
+                    SBT.destinations = [];
+                    $('.sbt-destination-input').each(function() {
+                        const val = $(this).val().trim();
+                        if (val) {
+                            SBT.destinations.push(val);
+                        }
+                    });
                     break;
             }
-            
+
             if (!isValid) {
                 SBT.showError(message);
             }
-            
+
             return isValid;
         },
         
         updateBookingSummary: function() {
-            const tourId = SBT.selectedTourId;
-            const date = SBT.selectedDate;
-            const passengers = SBT.passengerCount;
-            
-            // Fetch tour details and update summary
-            $.ajax({
-                url: `${sbtData.restUrl}tours/${tourId}`,
-                method: 'GET',
-                success: function(tour) {
-                    const totalAmount = tour.price_per_person 
-                        ? tour.price * passengers 
-                        : tour.price;
-                    
-                    $('.sbt-summary-tour').text(tour.title);
-                    $('.sbt-summary-date').text(new Date(date).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    }));
-                    $('.sbt-summary-passengers').text(passengers);
-                    $('.sbt-summary-total').text(`€${totalAmount.toFixed(2)}`);
-                }
+            const tours = SBT.selectedTours || [];
+            const dates = SBT.selectedDates || [];
+            const passengers = SBT.passengerCount || 1;
+            const destinations = SBT.destinations || [];
+
+            if (tours.length === 0) return;
+
+            let totalAmount = 0;
+            let tourNames = [];
+            let processedTours = 0;
+
+            // Fetch details for all selected tours
+            tours.forEach(tourId => {
+                $.ajax({
+                    url: `${sbtData.restUrl}tours/${tourId}`,
+                    method: 'GET',
+                    success: function(tour) {
+                        processedTours++;
+                        tourNames.push(tour.title);
+
+                        // Calculate price for this tour
+                        const tourPrice = tour.price_per_person
+                            ? tour.price * passengers * dates.length
+                            : tour.price * dates.length;
+
+                        totalAmount += tourPrice;
+
+                        // Update summary when all tours are processed
+                        if (processedTours === tours.length) {
+                            $('.sbt-summary-tours').html(tourNames.join('<br>'));
+
+                            if (dates.length === 1) {
+                                $('.sbt-summary-dates').text(new Date(dates[0]).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }));
+                            } else {
+                                const startDate = new Date(dates[0]).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                                const endDate = new Date(dates[dates.length - 1]).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                });
+                                $('.sbt-summary-dates').html(`${startDate} - ${endDate}<br><small>${dates.length} consecutive days</small>`);
+                            }
+
+                            $('.sbt-summary-passengers').text(passengers);
+
+                            // Show destinations if provided
+                            if (destinations.length > 0) {
+                                const route = destinations.join(' → ');
+                                $('.sbt-summary-destinations').text(route);
+                                $('.sbt-summary-destinations-row').show();
+                            } else {
+                                $('.sbt-summary-destinations-row').hide();
+                            }
+
+                            $('.sbt-summary-total').text(`€${totalAmount.toFixed(2)}`);
+                        }
+                    }
+                });
             });
         },
         
@@ -632,10 +896,23 @@
                 bookingData[field.name] = field.value;
             });
 
-            // Add tour, date, and passenger data
-            bookingData.tour_id = SBT.selectedTourId;
-            bookingData.date = SBT.selectedDate;
-            bookingData.passengers = SBT.passengerCount;
+            // Add multi-tour data (array of tour IDs)
+            bookingData.tour_ids = SBT.selectedTours && SBT.selectedTours.length > 0
+                ? SBT.selectedTours
+                : [SBT.selectedTourId];
+
+            // Add multi-date data (array of dates)
+            bookingData.dates = SBT.selectedDates && SBT.selectedDates.length > 0
+                ? SBT.selectedDates
+                : [SBT.selectedDate];
+
+            // Add passengers
+            bookingData.passengers = SBT.passengerCount || 1;
+
+            // Add destinations if provided
+            if (SBT.destinations && SBT.destinations.length > 0) {
+                bookingData.destinations = SBT.destinations.filter(d => d && d.trim() !== '');
+            }
 
             // Add reCAPTCHA token if enabled
             if (sbtData.recaptchaSiteKey) {
@@ -757,6 +1034,186 @@
                     location.reload();
                 }
             });
+        },
+
+        downloadSummaryPDF: function(e) {
+            e.preventDefault();
+
+            // Get all summary data
+            const tours = $('.sbt-summary-tours').html() || '-';
+            const dates = $('.sbt-summary-dates').html() || '-';
+            const passengers = $('.sbt-summary-passengers').text() || '-';
+            const destinations = $('.sbt-summary-destinations').text() || '';
+            const total = $('.sbt-summary-total').text() || '€0.00';
+
+            // Get customer info from form
+            const firstName = $('#sbt-first-name').val() || '';
+            const lastName = $('#sbt-last-name').val() || '';
+            const email = $('#sbt-email').val() || '';
+            const phone = $('#sbt-phone').val() || '';
+
+            // Create printable HTML
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Booking Summary - Santorini Boat Tours</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 40px auto;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 40px;
+                            border-bottom: 3px solid #1e3a8a;
+                            padding-bottom: 20px;
+                        }
+                        h1 {
+                            color: #1e3a8a;
+                            margin: 0 0 10px 0;
+                        }
+                        .subtitle {
+                            color: #666;
+                            font-size: 14px;
+                        }
+                        .section {
+                            margin-bottom: 30px;
+                            padding: 20px;
+                            background: #f9fafb;
+                            border-radius: 8px;
+                        }
+                        .section-title {
+                            font-size: 18px;
+                            font-weight: bold;
+                            color: #1e3a8a;
+                            margin-bottom: 15px;
+                            padding-bottom: 10px;
+                            border-bottom: 2px solid #e5e7eb;
+                        }
+                        .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 10px 0;
+                            border-bottom: 1px solid #e5e7eb;
+                        }
+                        .info-label {
+                            font-weight: 600;
+                            color: #666;
+                        }
+                        .info-value {
+                            color: #111827;
+                            text-align: right;
+                        }
+                        .total-row {
+                            background: #1e3a8a;
+                            color: white;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-top: 20px;
+                            font-size: 20px;
+                            font-weight: bold;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 1px solid #e5e7eb;
+                            color: #666;
+                            font-size: 12px;
+                        }
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 20px;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Santorini Boat Tours</h1>
+                        <p class="subtitle">Booking Summary</p>
+                        <p class="subtitle">Generated on ${new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</p>
+                    </div>
+
+                    ${firstName || lastName ? `
+                    <div class="section">
+                        <div class="section-title">Customer Information</div>
+                        ${firstName || lastName ? `<div class="info-row">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">${firstName} ${lastName}</span>
+                        </div>` : ''}
+                        ${email ? `<div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">${email}</span>
+                        </div>` : ''}
+                        ${phone ? `<div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">${phone}</span>
+                        </div>` : ''}
+                    </div>
+                    ` : ''}
+
+                    <div class="section">
+                        <div class="section-title">Booking Details</div>
+                        <div class="info-row">
+                            <span class="info-label">Selected Tours</span>
+                            <span class="info-value">${tours.replace(/<br>/g, ', ')}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Dates</span>
+                            <span class="info-value">${dates.replace(/<br>/g, ' ').replace(/<small>/g, '(').replace(/<\/small>/g, ')')}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Number of Passengers</span>
+                            <span class="info-value">${passengers}</span>
+                        </div>
+                        ${destinations ? `<div class="info-row">
+                            <span class="info-label">Route</span>
+                            <span class="info-value">${destinations}</span>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="total-row">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Amount</span>
+                            <span>${total}</span>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <p><strong>Santorini Boat Tours</strong></p>
+                        <p>This is a booking summary. Your booking will be confirmed upon payment completion.</p>
+                        <p>For inquiries, please contact us at info@santoriniboattours.com</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Open print dialog
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+
+            // Wait for content to load then print
+            printWindow.onload = function() {
+                printWindow.print();
+                // Close window after printing (optional)
+                // printWindow.onafterprint = function() {
+                //     printWindow.close();
+                // };
+            };
         }
     };
     

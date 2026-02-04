@@ -29,68 +29,109 @@ class SBT_Booking_Manager {
     
     public function create_booking($data) {
         global $wpdb;
-        
+
         // Validate data
         $validation = $this->validate_booking_data($data);
         if (is_wp_error($validation)) {
             return $validation;
         }
-        
-        // Check availability
+
+        // Normalize to arrays for consistent handling
+        $tour_ids = is_array($data['tour_ids']) ? $data['tour_ids'] : [$data['tour_id']];
+        $dates = is_array($data['dates']) ? $data['dates'] : [$data['date']];
+        $destinations = isset($data['destinations']) && is_array($data['destinations']) ? $data['destinations'] : [];
+
+        // Check availability for all tour-date combinations
         $availability = SBT_Availability::instance();
-        $is_available = $availability->check_availability(
-            $data['tour_id'],
-            $data['date'],
-            $data['passengers']
-        );
-        
-        if (!$is_available) {
-            return new WP_Error('not_available', 'This tour is not available for the selected date and passenger count.');
+        foreach ($tour_ids as $tour_id) {
+            foreach ($dates as $date) {
+                $is_available = $availability->check_availability(
+                    $tour_id,
+                    $date,
+                    $data['passengers']
+                );
+
+                if (!$is_available) {
+                    $tour_title = get_the_title($tour_id);
+                    return new WP_Error('not_available',
+                        sprintf('Tour "%s" is not available on %s for %d passengers.',
+                        $tour_title, $date, $data['passengers']));
+                }
+            }
         }
-        
+
         // Start transaction
         $wpdb->query('START TRANSACTION');
-        
+
         try {
-            // Reserve capacity
-            $reserved = $availability->reserve_capacity(
-                $data['tour_id'],
-                $data['date'],
-                $data['passengers']
-            );
-            
-            if (!$reserved) {
-                throw new Exception('Failed to reserve capacity');
+            // Reserve capacity for all tour-date combinations
+            foreach ($tour_ids as $tour_id) {
+                foreach ($dates as $date) {
+                    $reserved = $availability->reserve_capacity(
+                        $tour_id,
+                        $date,
+                        $data['passengers']
+                    );
+
+                    if (!$reserved) {
+                        throw new Exception('Failed to reserve capacity for tour #' . $tour_id . ' on ' . $date);
+                    }
+                }
             }
-            
-            // Calculate total amount
-            $tour_price = get_field('tour_price', $data['tour_id']);
-            $price_per_person = get_field('tour_price_per_person', $data['tour_id']);
-            
-            $total_amount = $price_per_person ? ($tour_price * $data['passengers']) : $tour_price;
-            
+
+            // Calculate total amount for all tours and dates
+            $total_amount = 0;
+            $tour_titles = [];
+            foreach ($tour_ids as $tour_id) {
+                $tour_price = get_field('tour_price', $tour_id);
+                $price_per_person = get_field('tour_price_per_person', $tour_id);
+                $tour_titles[] = get_the_title($tour_id);
+
+                // Calculate for this tour across all dates
+                if ($price_per_person) {
+                    $total_amount += ($tour_price * $data['passengers'] * count($dates));
+                } else {
+                    $total_amount += ($tour_price * count($dates));
+                }
+            }
+
             // Generate confirmation code
             $confirmation_code = $this->generate_confirmation_code();
-            
+
+            // Create descriptive booking title
+            $tour_summary = count($tour_titles) > 1
+                ? count($tour_titles) . ' tours'
+                : $tour_titles[0];
+
+            $date_summary = count($dates) > 1
+                ? count($dates) . ' days (' . $dates[0] . ' - ' . end($dates) . ')'
+                : $dates[0];
+
+            $destination_summary = !empty($destinations)
+                ? ' → ' . implode(' → ', array_slice($destinations, 0, 2))
+                : '';
+
             // Create booking post
             $booking_id = wp_insert_post([
                 'post_type' => 'sbt_booking',
                 'post_status' => 'publish',
                 'post_title' => sprintf(
-                    'Booking #%s - %s - %s',
+                    'Booking #%s - %s - %s%s',
                     $confirmation_code,
-                    get_the_title($data['tour_id']),
-                    $data['date']
+                    $tour_summary,
+                    $date_summary,
+                    $destination_summary
                 )
             ]);
-            
+
             if (is_wp_error($booking_id)) {
                 throw new Exception('Failed to create booking');
             }
-            
+
             // Save booking meta data
-            update_field('booking_tour', $data['tour_id'], $booking_id);
-            update_field('booking_date', $data['date'], $booking_id);
+            update_field('booking_tours', $tour_ids, $booking_id); // Array of tour IDs
+            update_field('booking_dates', $dates, $booking_id); // Array of dates
+            update_field('booking_destinations', $destinations, $booking_id); // Array of destinations
             update_field('booking_passengers', $data['passengers'], $booking_id);
             update_field('booking_customer_email', $data['email'], $booking_id);
             update_field('booking_customer_first_name', $data['first_name'], $booking_id);
@@ -101,7 +142,11 @@ class SBT_Booking_Manager {
             update_field('booking_status', 'pending', $booking_id);
             update_field('booking_total_amount', $total_amount, $booking_id);
             update_field('booking_confirmation_code', $confirmation_code, $booking_id);
-            
+
+            // Also save legacy single fields for backward compatibility
+            update_field('booking_tour', $tour_ids[0], $booking_id);
+            update_field('booking_date', $dates[0], $booking_id);
+
             // Save or update customer
             $customer_id = $this->save_customer([
                 'email' => $data['email'],
@@ -110,29 +155,35 @@ class SBT_Booking_Manager {
                 'phone' => $data['phone'],
                 'country' => $data['country'] ?? ''
             ]);
-            
+
             // Commit transaction
             $wpdb->query('COMMIT');
-            
-            // Schedule reminder email (24 hours before tour)
-            $tour_date = strtotime($data['date'] . ' ' . get_field('tour_departure_time', $data['tour_id']));
+
+            // Schedule reminder email (24 hours before first tour)
+            $first_tour_id = $tour_ids[0];
+            $first_date = $dates[0];
+            $departure_time = get_field('tour_departure_time', $first_tour_id) ?: '09:00';
+            $tour_date = strtotime($first_date . ' ' . $departure_time);
             $reminder_time = $tour_date - (24 * HOUR_IN_SECONDS);
-            
+
             if ($reminder_time > time()) {
                 wp_schedule_single_event($reminder_time, 'sbt_send_booking_reminder', [$booking_id]);
             }
-            
+
             // Send pending confirmation email
             $email_notifications = SBT_Email_Notifications::instance();
             $email_notifications->send_booking_pending($booking_id);
-            
+
             return [
                 'booking_id' => $booking_id,
                 'confirmation_code' => $confirmation_code,
                 'total_amount' => $total_amount,
-                'status' => 'pending'
+                'status' => 'pending',
+                'tour_count' => count($tour_ids),
+                'date_count' => count($dates),
+                'has_destinations' => !empty($destinations)
             ];
-            
+
         } catch (Exception $e) {
             $wpdb->query('ROLLBACK');
             return new WP_Error('booking_failed', $e->getMessage());
@@ -202,62 +253,113 @@ class SBT_Booking_Manager {
     }
     
     private function validate_booking_data($data) {
-        $required_fields = ['tour_id', 'date', 'passengers', 'first_name', 'last_name', 'email', 'phone'];
-        
+        // Check for required fields
+        $required_fields = ['passengers', 'first_name', 'last_name', 'email', 'phone'];
+
         foreach ($required_fields as $field) {
             if (empty($data[$field])) {
                 return new WP_Error('missing_field', sprintf('Missing required field: %s', $field));
             }
         }
-        
-        // Validate tour exists
-        $tour = get_post($data['tour_id']);
-        if (!$tour || $tour->post_type !== 'sbt_tour') {
-            return new WP_Error('invalid_tour', 'Invalid tour ID');
-        }
-        
-        // Validate date is in the future
-        if (strtotime($data['date']) < strtotime('today')) {
-            return new WP_Error('invalid_date', 'Booking date must be in the future');
-        }
-        
-        // Validate passenger count
-        $max_capacity = get_field('tour_max_capacity', $data['tour_id']);
-        if ($data['passengers'] > $max_capacity) {
-            return new WP_Error('exceeds_capacity', sprintf('Maximum capacity is %d passengers', $max_capacity));
-        }
-        
+
         // Validate email
         if (!is_email($data['email'])) {
             return new WP_Error('invalid_email', 'Invalid email address');
         }
-        
-        // Check if tour is available on this day of week
-        $available_days = get_field('tour_available_days', $data['tour_id']);
-        $day_of_week = strtolower(date('l', strtotime($data['date'])));
-        
-        if (!in_array($day_of_week, $available_days)) {
-            return new WP_Error('not_available_day', 'Tour is not available on this day of the week');
+
+        // Normalize tour_ids and dates to arrays
+        $tour_ids = [];
+        if (!empty($data['tour_ids']) && is_array($data['tour_ids'])) {
+            $tour_ids = $data['tour_ids'];
+        } elseif (!empty($data['tour_id'])) {
+            $tour_ids = [$data['tour_id']];
         }
-        
-        // Check blackout dates
-        $blackout_dates = get_field('tour_blackout_dates', $data['tour_id']);
-        if (is_array($blackout_dates)) {
-            foreach ($blackout_dates as $blackout) {
-                if ($blackout['blackout_date'] === $data['date']) {
-                    return new WP_Error('blackout_date', 'This date is not available');
+
+        if (empty($tour_ids)) {
+            return new WP_Error('missing_field', 'At least one tour must be selected');
+        }
+
+        $dates = [];
+        if (!empty($data['dates']) && is_array($data['dates'])) {
+            $dates = $data['dates'];
+        } elseif (!empty($data['date'])) {
+            $dates = [$data['date']];
+        }
+
+        if (empty($dates)) {
+            return new WP_Error('missing_field', 'At least one date must be selected');
+        }
+
+        // Validate each tour
+        foreach ($tour_ids as $tour_id) {
+            $tour = get_post($tour_id);
+            if (!$tour || $tour->post_type !== 'sbt_tour') {
+                return new WP_Error('invalid_tour', 'Invalid tour ID: ' . $tour_id);
+            }
+
+            // Validate passenger count against capacity
+            $max_capacity = get_field('tour_max_capacity', $tour_id);
+            if ($data['passengers'] > $max_capacity) {
+                return new WP_Error('exceeds_capacity', sprintf('Tour "%s" maximum capacity is %d passengers', get_the_title($tour_id), $max_capacity));
+            }
+        }
+
+        // Validate each date
+        $today = strtotime('today');
+        $buffer_hours = get_option('sbt_booking_buffer_hours', 24);
+
+        foreach ($dates as $date) {
+            // Validate date is in the future
+            if (strtotime($date) < $today) {
+                return new WP_Error('invalid_date', 'Booking date must be in the future: ' . $date);
+            }
+
+            // Validate each tour on this date
+            foreach ($tour_ids as $tour_id) {
+                // Check if tour is available on this day of week
+                $available_days = get_field('tour_available_days', $tour_id);
+                $day_of_week = strtolower(date('l', strtotime($date)));
+
+                if (is_array($available_days) && !empty($available_days) && !in_array($day_of_week, $available_days)) {
+                    return new WP_Error('not_available_day', sprintf('Tour "%s" is not available on %s (%s)', get_the_title($tour_id), $date, ucfirst($day_of_week)));
+                }
+
+                // Check blackout dates
+                $blackout_dates = get_field('tour_blackout_dates', $tour_id);
+                if (is_array($blackout_dates)) {
+                    foreach ($blackout_dates as $blackout) {
+                        if (isset($blackout['blackout_date']) && $blackout['blackout_date'] === $date) {
+                            return new WP_Error('blackout_date', sprintf('Tour "%s" is not available on %s (blocked date)', get_the_title($tour_id), $date));
+                        }
+                    }
+                }
+
+                // Check booking buffer
+                $departure_time = get_field('tour_departure_time', $tour_id) ?: '09:00';
+                $booking_cutoff = strtotime($date . ' ' . $departure_time) - ($buffer_hours * HOUR_IN_SECONDS);
+
+                if (time() > $booking_cutoff) {
+                    return new WP_Error('too_late', sprintf('Bookings for %s must be made at least %d hours in advance', $date, $buffer_hours));
                 }
             }
         }
-        
-        // Check booking buffer
-        $buffer_hours = get_option('sbt_booking_buffer_hours', 24);
-        $booking_cutoff = strtotime($data['date'] . ' ' . get_field('tour_departure_time', $data['tour_id'])) - ($buffer_hours * HOUR_IN_SECONDS);
-        
-        if (time() > $booking_cutoff) {
-            return new WP_Error('too_late', sprintf('Bookings must be made at least %d hours in advance', $buffer_hours));
+
+        // Validate consecutive dates if multi-date booking
+        if (count($dates) > 1) {
+            $sorted_dates = $dates;
+            sort($sorted_dates);
+
+            for ($i = 0; $i < count($sorted_dates) - 1; $i++) {
+                $current_date = strtotime($sorted_dates[$i]);
+                $next_date = strtotime($sorted_dates[$i + 1]);
+                $diff_days = ($next_date - $current_date) / (60 * 60 * 24);
+
+                if ($diff_days !== 1) {
+                    return new WP_Error('non_consecutive_dates', 'Dates must be consecutive (no gaps allowed): ' . $sorted_dates[$i] . ' to ' . $sorted_dates[$i + 1]);
+                }
+            }
         }
-        
+
         return true;
     }
     

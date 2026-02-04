@@ -120,35 +120,84 @@ class SBT_Shortcodes {
             <?php endif; ?>
             
             <!-- Step 1: Select Tour -->
-            <div class="sbt-step-content" data-step="1">
-                <h3>Select Your Tour</h3>
-                <?php echo do_shortcode('[sbt_tour_list]'); ?>
-                <button type="button" class="sbt-button sbt-step-next">Next</button>
-            </div>
-            
-            <!-- Step 2: Choose Date -->
-            <div class="sbt-step-content" data-step="2" style="display: none;">
-                <h3>Choose Your Date</h3>
-                <?php echo do_shortcode('[sbt_availability_calendar]'); ?>
-                <div class="sbt-availability-message"></div>
-                <button type="button" class="sbt-button sbt-button-secondary sbt-step-prev">Back</button>
-                <button type="button" class="sbt-button sbt-step-next">Next</button>
-            </div>
-            
-            <!-- Step 3: Passengers -->
-            <div class="sbt-step-content" data-step="3" style="display: none;">
-                <h3>Number of Passengers</h3>
-                <div class="sbt-passenger-counter" data-max-capacity="20">
-                    <button type="button" class="sbt-counter-btn" data-action="decrement" disabled>-</button>
-                    <span class="sbt-counter-value">1</span>
-                    <button type="button" class="sbt-counter-btn" data-action="increment">+</button>
+            <div class="sbt-step-content sbt-step-section" data-step="1">
+                <div class="sbt-step-header">
+                    <h3>Select Your Tour(s)</h3>
+                    <p class="sbt-step-description">Choose one or multiple tours for your booking</p>
                 </div>
-                <button type="button" class="sbt-button sbt-button-secondary sbt-step-prev">Back</button>
-                <button type="button" class="sbt-button sbt-step-next">Next</button>
+                <div class="sbt-step-body">
+                    <?php echo do_shortcode('[sbt_tour_list selection_mode="checkbox"]'); ?>
+                </div>
+                <div class="sbt-step-footer">
+                    <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
+                </div>
             </div>
             
-            <!-- Step 4: Customer Details -->
-            <div class="sbt-step-content" data-step="4" style="display: none;">
+            <!-- Step 2: Choose Date(s) -->
+            <div class="sbt-step-content sbt-step-section" data-step="2" style="display: none;">
+                <div class="sbt-step-header">
+                    <h3>Choose Your Date(s)</h3>
+                    <p class="sbt-step-description">Select consecutive dates for your booking (no gaps allowed)</p>
+                </div>
+                <div class="sbt-step-body">
+                    <?php echo do_shortcode('[sbt_availability_calendar multi_select="true"]'); ?>
+                    <div class="sbt-availability-message"></div>
+                    <div class="sbt-selected-dates-summary"></div>
+                </div>
+                <div class="sbt-step-footer">
+                    <button type="button" class="sbt-btn sbt-btn-secondary sbt-step-prev">Back</button>
+                    <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Passengers & Destinations -->
+            <div class="sbt-step-content sbt-step-section" data-step="3" style="display: none;">
+                <div class="sbt-step-header">
+                    <h3>Passengers & Destinations</h3>
+                    <p class="sbt-step-description">Specify number of passengers and route</p>
+                </div>
+                <div class="sbt-step-body">
+                    <div class="sbt-form-section">
+                        <h4 class="sbt-form-section-title">Number of Passengers</h4>
+                        <div class="sbt-passenger-counter" data-max-capacity="20">
+                            <button type="button" class="sbt-counter-btn" data-action="decrement" disabled>-</button>
+                            <span class="sbt-counter-value">1</span>
+                            <button type="button" class="sbt-counter-btn" data-action="increment">+</button>
+                        </div>
+                    </div>
+
+                    <div class="sbt-form-section sbt-destinations-section">
+                        <h4 class="sbt-form-section-title">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                            </svg>
+                            Multi-Destination Route
+                        </h4>
+                        <p class="sbt-section-description">Add stops along your route (e.g., Santorini → Ios → Mykonos)</p>
+
+                        <div class="sbt-destinations-list">
+                            <div class="sbt-destination-item">
+                                <label class="sbt-form-label">Starting Point</label>
+                                <input type="text" class="sbt-form-input sbt-destination-input" data-index="0" placeholder="e.g., Santorini" />
+                            </div>
+                        </div>
+
+                        <button type="button" class="sbt-btn sbt-btn-secondary sbt-add-destination">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Add Stop
+                        </button>
+                    </div>
+                </div>
+                <div class="sbt-step-footer">
+                    <button type="button" class="sbt-btn sbt-btn-secondary sbt-step-prev">Back</button>
+                    <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Customer Details & Summary -->
+            <div class="sbt-step-content sbt-step-section" data-step="4" style="display: none;">
                 <div class="sbt-booking-final-step">
                     <div class="sbt-booking-summary-card">
                         <h3 class="sbt-summary-title">
@@ -156,7 +205,7 @@ class SBT_Shortcodes {
                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                                 <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
                             </svg>
-                            Booking Summary
+                            Detailed Booking Summary
                         </h3>
 
                         <div class="sbt-summary-content">
@@ -165,9 +214,9 @@ class SBT_Shortcodes {
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
                                     </svg>
-                                    Tour
+                                    Selected Tours
                                 </span>
-                                <span class="sbt-summary-value sbt-summary-tour">-</span>
+                                <span class="sbt-summary-value sbt-summary-tours">-</span>
                             </div>
 
                             <div class="sbt-summary-item">
@@ -175,9 +224,9 @@ class SBT_Shortcodes {
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                                     </svg>
-                                    Date
+                                    Dates
                                 </span>
-                                <span class="sbt-summary-value sbt-summary-date">-</span>
+                                <span class="sbt-summary-value sbt-summary-dates">-</span>
                             </div>
 
                             <div class="sbt-summary-item">
@@ -192,6 +241,16 @@ class SBT_Shortcodes {
                                 <span class="sbt-summary-value sbt-summary-passengers">-</span>
                             </div>
 
+                            <div class="sbt-summary-item sbt-summary-destinations-row" style="display: none;">
+                                <span class="sbt-summary-label">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                    </svg>
+                                    Route
+                                </span>
+                                <span class="sbt-summary-value sbt-summary-destinations">-</span>
+                            </div>
+
                             <div class="sbt-summary-divider"></div>
 
                             <div class="sbt-summary-item sbt-summary-total-row">
@@ -199,6 +258,14 @@ class SBT_Shortcodes {
                                 <span class="sbt-summary-value sbt-summary-total">€0.00</span>
                             </div>
                         </div>
+
+                        <button type="button" class="sbt-btn sbt-btn-secondary sbt-download-summary" style="margin-top: 20px; width: 100%;">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                            </svg>
+                            Download Summary (PDF)
+                        </button>
                     </div>
 
                     <div class="sbt-booking-form-card">
@@ -343,7 +410,8 @@ class SBT_Shortcodes {
             'columns' => '3',
             'limit' => -1,
             'show_filters' => 'true',
-            'view_mode' => 'grid' // grid or list
+            'view_mode' => 'grid', // grid or list
+            'selection_mode' => 'none' // none, radio, or checkbox
         ], $atts);
 
         // If no type from shortcode attribute, check URL parameters
@@ -423,7 +491,7 @@ class SBT_Shortcodes {
             </div>
             <?php endif; ?>
 
-            <div class="sbt-tours-grid sbt-tours-columns-<?php echo esc_attr($atts['columns']); ?> sbt-view-<?php echo esc_attr($atts['view_mode']); ?>">
+            <div class="sbt-tours-grid sbt-tours-columns-<?php echo esc_attr($atts['columns']); ?> sbt-view-<?php echo esc_attr($atts['view_mode']); ?> <?php echo $atts['selection_mode'] !== 'none' ? 'sbt-tour-selection' : ''; ?>">
                 <?php while ($tours->have_posts()): $tours->the_post();
                     $tour_id = get_the_ID();
                     $tour_type = get_field('tour_type', $tour_id);
@@ -432,13 +500,34 @@ class SBT_Shortcodes {
                     $price = get_field('tour_price', $tour_id);
                     $price_per_person = get_field('tour_price_per_person', $tour_id);
                     $departure_location = get_field('tour_departure_location', $tour_id);
+
+                    $card_classes = 'sbt-tour-card-archive';
+                    if ($atts['selection_mode'] !== 'none') {
+                        $card_classes .= ' sbt-tour-option';
+                    }
                 ?>
-                    <article class="sbt-tour-card-archive" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>">
+                    <article class="<?php echo $card_classes; ?>" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>" data-tour-price="<?php echo esc_attr($price); ?>" data-price-per-person="<?php echo $price_per_person ? 'true' : 'false'; ?>">
+                        <?php if ($atts['selection_mode'] === 'checkbox'): ?>
+                        <div class="sbt-tour-checkbox-wrapper">
+                            <input type="checkbox" name="selected_tours[]" value="<?php echo $tour_id; ?>" class="sbt-tour-checkbox" id="tour-<?php echo $tour_id; ?>" />
+                            <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-checkbox-label"></label>
+                        </div>
+                        <?php elseif ($atts['selection_mode'] === 'radio'): ?>
+                        <div class="sbt-tour-radio-wrapper">
+                            <input type="radio" name="selected_tour" value="<?php echo $tour_id; ?>" class="sbt-tour-radio" id="tour-<?php echo $tour_id; ?>" />
+                            <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-radio-label"></label>
+                        </div>
+                        <?php endif; ?>
+
                         <?php if (has_post_thumbnail()): ?>
                         <div class="sbt-tour-card-image">
+                            <?php if ($atts['selection_mode'] === 'none'): ?>
                             <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
                                 <?php the_post_thumbnail('large'); ?>
                             </a>
+                            <?php else: ?>
+                                <?php the_post_thumbnail('large'); ?>
+                            <?php endif; ?>
                             <?php if ($tour_type): ?>
                             <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
                             <?php endif; ?>
@@ -497,12 +586,22 @@ class SBT_Shortcodes {
                                 </div>
                                 <?php endif; ?>
 
-                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary">
-                                    View Details
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                                    </svg>
-                                </a>
+                                <div class="sbt-tour-card-actions">
+                                    <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-tour-detail" target="_blank">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                                        </svg>
+                                        Details
+                                    </a>
+                                    <?php if ($atts['selection_mode'] === 'none'): ?>
+                                    <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-secondary">
+                                        Book Now
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                        </svg>
+                                    </a>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </article>
@@ -744,7 +843,7 @@ class SBT_Shortcodes {
                                         </svg>
                                         Check Availability
                                     </h4>
-                                    <?php echo do_shortcode('[sbt_availability_calendar tour_id="' . $tour_id . '"]'); ?>
+                                    <?php echo do_shortcode('[sbt_availability_calendar tour_id="' . $tour_id . '" full_width="true"]'); ?>
                                 </div>
 
                                 <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
@@ -805,6 +904,8 @@ class SBT_Shortcodes {
         $atts = shortcode_atts([
             'date' => '',
             'tour_id' => '',
+            'multi_select' => 'false',
+            'full_width' => 'false'
         ], $atts);
 
         // If no values from shortcode attributes, check URL parameters
@@ -816,11 +917,20 @@ class SBT_Shortcodes {
             $atts['tour_id'] = $this->get_url_param('id', $this->get_url_param('tour_id'));
         }
 
+        $calendar_class = 'sbt-calendar';
+        if ($atts['full_width'] === 'true') {
+            $calendar_class .= ' sbt-calendar-full-width';
+        }
+        if ($atts['multi_select'] === 'true') {
+            $calendar_class .= ' sbt-calendar-multi-select';
+        }
+
         ob_start();
         ?>
-        <div class="sbt-calendar"
+        <div class="<?php echo esc_attr($calendar_class); ?>"
              data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
-             data-tour-id="<?php echo esc_attr($atts['tour_id']); ?>">
+             data-tour-id="<?php echo esc_attr($atts['tour_id']); ?>"
+             data-multi-select="<?php echo esc_attr($atts['multi_select']); ?>">
             <div class="sbt-calendar-header">
                 <button type="button" class="sbt-calendar-nav sbt-calendar-prev">&lt;</button>
                 <h4 class="sbt-calendar-title"></h4>

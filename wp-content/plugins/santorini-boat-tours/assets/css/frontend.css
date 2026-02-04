@@ -773,6 +773,91 @@
     font-weight: 700;
 }
 
+.sbt-booking-step.completed {
+    cursor: pointer;
+}
+
+.sbt-booking-step.completed:hover .sbt-step-number {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px var(--sbt-white), 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* Step Content Sections */
+.sbt-step-content {
+    transition: all 0.4s ease;
+}
+
+.sbt-step-section {
+    background: var(--sbt-white);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--sbt-shadow-lg);
+    border: 1px solid var(--sbt-gray-100);
+}
+
+.sbt-step-section.collapsed {
+    max-height: 80px;
+    overflow: hidden;
+}
+
+.sbt-step-section.collapsed .sbt-step-body,
+.sbt-step-section.collapsed .sbt-step-footer {
+    display: none;
+}
+
+.sbt-step-section.collapsed .sbt-step-header {
+    cursor: pointer;
+    background: var(--sbt-gray-50);
+}
+
+.sbt-step-section.collapsed .sbt-step-header:hover {
+    background: #dbeafe;
+}
+
+.sbt-step-header {
+    padding: 32px 40px;
+    background: linear-gradient(135deg, var(--sbt-gray-50) 0%, var(--sbt-white) 100%);
+    border-bottom: 1px solid var(--sbt-gray-100);
+    transition: all 0.3s ease;
+}
+
+.sbt-step-header h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 8px 0;
+}
+
+.sbt-step-description {
+    font-size: 15px;
+    color: var(--sbt-gray-600);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.sbt-step-body {
+    padding: 40px;
+}
+
+.sbt-step-footer {
+    padding: 24px 40px;
+    background: var(--sbt-gray-50);
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    border-top: 1px solid var(--sbt-gray-100);
+}
+
+.sbt-step-footer .sbt-btn {
+    flex: 1;
+    max-width: 200px;
+}
+
+.sbt-step-footer .sbt-btn-primary {
+    margin-left: auto;
+}
+
 .sbt-step-content h3 {
     font-size: 28px;
     font-weight: 700;
@@ -819,47 +904,86 @@
     transform: translateY(-6px);
 }
 
-.sbt-tour-card-archive.sbt-tour-option::before {
-    content: '';
+/* Checkbox and Radio Wrapper */
+.sbt-tour-checkbox-wrapper,
+.sbt-tour-radio-wrapper {
     position: absolute;
     top: 16px;
     right: 16px;
+    z-index: 10;
+}
+
+.sbt-tour-checkbox,
+.sbt-tour-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sbt-tour-checkbox-label,
+.sbt-tour-radio-label {
+    display: block;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: 6px;
     border: 3px solid var(--sbt-gray-300);
     background: var(--sbt-white);
-    z-index: 10;
+    cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.sbt-tour-card-archive.sbt-tour-option.selected::before {
+.sbt-tour-radio-label {
+    border-radius: 50%;
+}
+
+.sbt-tour-checkbox:checked + .sbt-tour-checkbox-label,
+.sbt-tour-radio:checked + .sbt-tour-radio-label {
     background: var(--sbt-primary);
     border-color: var(--sbt-primary);
-    box-shadow: 0 0 0 2px var(--sbt-white), 0 0 0 4px var(--sbt-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
-.sbt-tour-card-archive.sbt-tour-option.selected::after {
+.sbt-tour-checkbox:checked + .sbt-tour-checkbox-label::after,
+.sbt-tour-radio:checked + .sbt-tour-radio-label::after {
     content: '✓';
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     color: var(--sbt-white);
     font-size: 18px;
     font-weight: 700;
-    z-index: 11;
     animation: checkmark-pop 0.3s ease;
+}
+
+.sbt-tour-checkbox-label:hover,
+.sbt-tour-radio-label:hover {
+    border-color: var(--sbt-primary-light);
+    transform: scale(1.1);
+}
+
+.sbt-tour-card-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sbt-btn-tour-detail {
+    flex: 1;
 }
 
 @keyframes checkmark-pop {
     0% {
-        transform: scale(0);
+        transform: translate(-50%, -50%) scale(0);
     }
     50% {
-        transform: scale(1.2);
+        transform: translate(-50%, -50%) scale(1.2);
     }
     100% {
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 
@@ -936,12 +1060,193 @@
     color: var(--sbt-primary);
 }
 
+/* Multi-Destination Section */
+.sbt-destinations-section {
+    margin-top: 32px;
+    padding: 24px;
+    background: var(--sbt-gray-50);
+    border-radius: 12px;
+    border: 2px dashed var(--sbt-gray-200);
+}
+
+.sbt-form-section {
+    margin-bottom: 24px;
+}
+
+.sbt-form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sbt-form-section-title svg {
+    color: var(--sbt-primary);
+}
+
+.sbt-section-description {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+}
+
+.sbt-destinations-list {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.sbt-destination-item {
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sbt-destination-item label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--sbt-gray-700);
+    margin-bottom: 8px;
+}
+
+.sbt-destination-input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-right: 48px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.sbt-destination-input:focus {
+    outline: none;
+    border-color: var(--sbt-primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sbt-remove-destination {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    background: var(--sbt-danger);
+    color: var(--sbt-white);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.sbt-remove-destination:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.sbt-add-destination {
+    width: 100%;
+    justify-content: center;
+}
+
+.sbt-selected-dates-summary {
+    margin-top: 20px;
+    padding: 16px;
+    background: #dbeafe;
+    border-radius: 8px;
+    display: none;
+}
+
+.sbt-selected-dates-summary.active {
+    display: block;
+}
+
+.sbt-selected-dates-summary h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    margin: 0 0 12px 0;
+}
+
+.sbt-selected-dates-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sbt-selected-date-tag {
+    padding: 6px 12px;
+    background: var(--sbt-white);
+    border: 1px solid var(--sbt-primary);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--sbt-primary);
+    font-weight: 600;
+}
+
 /* Calendar */
 .sbt-calendar {
     background: var(--sbt-white);
     border-radius: 12px;
     padding: 24px;
     border: 1px solid var(--sbt-gray-200);
+}
+
+.sbt-calendar-full-width {
+    width: 100%;
+    max-width: none;
+}
+
+.sbt-calendar-full-width .sbt-calendar-grid {
+    gap: 12px;
+}
+
+.sbt-calendar-full-width .sbt-calendar-day {
+    padding: 16px 8px;
+    font-size: 16px;
+}
+
+.sbt-calendar-multi-select .sbt-calendar-day.in-range {
+    background: #bfdbfe;
+    color: var(--sbt-primary-dark);
+    border-color: var(--sbt-primary-light);
+}
+
+.sbt-calendar-multi-select .sbt-calendar-day.range-start {
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary));
+    color: var(--sbt-white);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.sbt-calendar-multi-select .sbt-calendar-day.range-end {
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary));
+    color: var(--sbt-white);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.sbt-calendar-multi-select .sbt-calendar-day.range-start.range-end {
+    border-radius: 8px;
 }
 
 .sbt-calendar-header {
@@ -978,6 +1283,16 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+}
+
+.sbt-calendar-day-header {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sbt-gray-600);
+    padding: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sbt-calendar-day {
@@ -1192,6 +1507,319 @@
     font-size: 28px;
     font-weight: 800;
     color: var(--sbt-primary);
+}
+
+/* Form Inputs and Elements */
+.sbt-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.sbt-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sbt-form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--sbt-gray-700);
+}
+
+.sbt-required {
+    color: var(--sbt-danger);
+}
+
+.sbt-form-input,
+.sbt-form-textarea,
+.sbt-form-select {
+    padding: 12px 16px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--sbt-gray-900);
+    background: var(--sbt-white);
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.sbt-form-input:focus,
+.sbt-form-textarea:focus,
+.sbt-form-select:focus {
+    outline: none;
+    border-color: var(--sbt-primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sbt-form-input.error,
+.sbt-form-textarea.error,
+.sbt-form-select.error {
+    border-color: var(--sbt-danger);
+}
+
+.sbt-form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.sbt-field-error {
+    font-size: 13px;
+    color: var(--sbt-danger);
+    margin-top: 4px;
+}
+
+/* Payment Methods */
+.sbt-payment-methods {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.sbt-payment-option {
+    display: block;
+    cursor: pointer;
+}
+
+.sbt-payment-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sbt-payment-option-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 8px;
+    background: var(--sbt-white);
+    transition: all 0.3s ease;
+}
+
+.sbt-payment-option:hover .sbt-payment-option-content {
+    border-color: var(--sbt-primary-light);
+    background: var(--sbt-gray-50);
+}
+
+.sbt-payment-option input[type="radio"]:checked + .sbt-payment-option-content {
+    border-color: var(--sbt-primary);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sbt-payment-option-content svg {
+    color: var(--sbt-primary);
+    flex-shrink: 0;
+}
+
+.sbt-payment-option-content span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sbt-payment-option-content strong {
+    font-size: 15px;
+    color: var(--sbt-gray-900);
+}
+
+.sbt-payment-option-content small {
+    font-size: 13px;
+    color: var(--sbt-gray-600);
+}
+
+/* Checkbox */
+.sbt-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--sbt-gray-700);
+    line-height: 1.6;
+}
+
+.sbt-checkbox-label input[type="checkbox"] {
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--sbt-primary);
+}
+
+.sbt-checkbox-label a {
+    color: var(--sbt-primary);
+    text-decoration: underline;
+}
+
+/* Error Message */
+.sbt-error-message {
+    padding: 16px;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    color: #991b1b;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.sbt-error-message:not(:empty) {
+    display: block;
+}
+
+/* Form Actions */
+.sbt-form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.sbt-form-actions .sbt-btn {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Loading State */
+.sbt-loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--sbt-white);
+    border-radius: 50%;
+    animation: sbt-spin 0.6s linear infinite;
+}
+
+@keyframes sbt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Badge */
+.sbt-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.sbt-badge-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sbt-badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.sbt-badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sbt-tour-two-column {
+        grid-template-columns: 1fr;
+    }
+
+    .sbt-booking-card-sticky {
+        position: relative;
+        top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .sbt-tours-columns-2,
+    .sbt-tours-columns-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .sbt-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .sbt-booking-steps {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sbt-booking-steps::before {
+        display: none;
+    }
+
+    .sbt-booking-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sbt-step-number {
+        margin-bottom: 0;
+    }
+
+    .sbt-tour-archive-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .sbt-tour-filters {
+        width: 100%;
+    }
+
+    .sbt-form-actions {
+        flex-direction: column;
+    }
+
+    .sbt-form-actions .sbt-btn {
+        width: 100%;
+    }
+
+    .sbt-step-header h3 {
+        font-size: 22px;
+    }
+
+    .sbt-step-body {
+        padding: 24px 20px;
+    }
+
+    .sbt-passenger-counter {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sbt-booking-widget {
+        padding: 30px 20px;
+    }
+
+    .sbt-tour-hero-title {
+        font-size: 32px;
+    }
+
+    .sbt-calendar-grid {
+        gap: 4px;
+    }
+
+    .sbt-calendar-day {
+        font-size: 12px;
+    }
+
+    .sbt-tour-card-meta-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Form Elements */
