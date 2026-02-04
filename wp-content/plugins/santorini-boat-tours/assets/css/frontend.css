@@ -3610,7 +3610,7 @@
 
     .sbt-filters-sidebar.active::before {
         opacity: 1;
-        pointer-events: auto;
+        pointer-events: none;
         left: 400px;
     }
 
