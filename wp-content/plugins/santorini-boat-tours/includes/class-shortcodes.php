@@ -30,6 +30,7 @@ class SBT_Shortcodes {
         add_shortcode('sbt_tour_card', [$this, 'tour_card']);
         add_shortcode('sbt_single_tour', [$this, 'tour_card']); // Alias
         add_shortcode('sbt_availability_calendar', [$this, 'availability_calendar']);
+        add_shortcode('sbt_booking_confirmation', [$this, 'booking_confirmation']);
     }
 
     /**
@@ -948,6 +949,402 @@ class SBT_Shortcodes {
                 <span class="sbt-legend-item">
                     <span class="sbt-legend-box sbt-legend-blocked"></span> Unavailable
                 </span>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Booking Confirmation Shortcode
+     * Usage: [sbt_booking_confirmation]
+     * URL Parameter: ?code=XXXXXXXX
+     */
+    public function booking_confirmation($atts) {
+        $atts = shortcode_atts([
+            'code' => ''
+        ], $atts);
+
+        // Get confirmation code from URL if not provided
+        if (empty($atts['code'])) {
+            $atts['code'] = $this->get_url_param('code');
+        }
+
+        if (empty($atts['code'])) {
+            return '<div class="sbt-confirmation-error">
+                <div class="sbt-error-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                    </svg>
+                </div>
+                <h2>No Confirmation Code</h2>
+                <p>Please provide a booking confirmation code.</p>
+            </div>';
+        }
+
+        // Find booking by confirmation code
+        $args = [
+            'post_type' => 'sbt_booking',
+            'meta_query' => [
+                [
+                    'key' => 'booking_confirmation_code',
+                    'value' => sanitize_text_field($atts['code']),
+                    'compare' => '='
+                ]
+            ],
+            'posts_per_page' => 1
+        ];
+
+        $bookings = get_posts($args);
+
+        if (empty($bookings)) {
+            return '<div class="sbt-confirmation-error">
+                <div class="sbt-error-icon">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                    </svg>
+                </div>
+                <h2>Booking Not Found</h2>
+                <p>We couldn\'t find a booking with confirmation code: <strong>' . esc_html($atts['code']) . '</strong></p>
+                <p>Please check your confirmation code and try again.</p>
+            </div>';
+        }
+
+        $booking = $bookings[0];
+        $booking_id = $booking->ID;
+
+        // Get booking details
+        $status = get_field('booking_status', $booking_id);
+        $confirmation_code = get_field('booking_confirmation_code', $booking_id);
+        $passengers = get_field('booking_passengers', $booking_id);
+        $total_amount = get_field('booking_total_amount', $booking_id);
+        $payment_method = get_field('booking_payment_method', $booking_id);
+        $created_date = get_the_date('F j, Y', $booking_id);
+        $created_time = get_the_time('g:i A', $booking_id);
+
+        // Customer details
+        $first_name = get_field('booking_customer_first_name', $booking_id);
+        $last_name = get_field('booking_customer_last_name', $booking_id);
+        $email = get_field('booking_customer_email', $booking_id);
+        $phone = get_field('booking_customer_phone', $booking_id);
+        $country = get_field('booking_customer_country', $booking_id);
+        $special_requests = get_field('booking_special_requests', $booking_id);
+
+        // Get tours and dates (support both single and multi-booking)
+        $tour_ids = get_field('booking_tours', $booking_id);
+        $dates = get_field('booking_dates', $booking_id);
+        $destinations = get_field('booking_destinations', $booking_id);
+
+        // Fallback to single tour/date if multi-booking fields are empty
+        if (empty($tour_ids) || !is_array($tour_ids)) {
+            $tour_ids = [get_field('booking_tour', $booking_id)];
+        }
+        if (empty($dates) || !is_array($dates)) {
+            $dates = [get_field('booking_date', $booking_id)];
+        }
+
+        // Get status badge
+        $status_class = 'sbt-status-' . $status;
+        $status_label = ucfirst($status);
+        $status_icon = '';
+
+        switch ($status) {
+            case 'confirmed':
+                $status_icon = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                </svg>';
+                break;
+            case 'pending':
+                $status_icon = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>';
+                break;
+            case 'cancelled':
+                $status_icon = '<svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                </svg>';
+                break;
+        }
+
+        ob_start();
+        ?>
+        <div class="sbt-booking-confirmation" data-booking-id="<?php echo esc_attr($booking_id); ?>" data-confirmation-code="<?php echo esc_attr($confirmation_code); ?>">
+            <!-- Success Header -->
+            <div class="sbt-confirmation-header">
+                <div class="sbt-success-icon">
+                    <?php if ($status === 'confirmed'): ?>
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>
+                    <?php else: ?>
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                    </svg>
+                    <?php endif; ?>
+                </div>
+                <h1 class="sbt-confirmation-title">
+                    <?php echo $status === 'confirmed' ? 'Booking Confirmed!' : 'Booking Received'; ?>
+                </h1>
+                <p class="sbt-confirmation-subtitle">
+                    <?php echo $status === 'confirmed'
+                        ? 'Your booking has been confirmed. We look forward to seeing you!'
+                        : 'Your booking has been received and is being processed.'; ?>
+                </p>
+                <div class="sbt-confirmation-code-display">
+                    <span class="sbt-code-label">Confirmation Code</span>
+                    <span class="sbt-code-value"><?php echo esc_html($confirmation_code); ?></span>
+                </div>
+                <div class="sbt-status-badge <?php echo esc_attr($status_class); ?>">
+                    <?php echo $status_icon; ?>
+                    <span><?php echo esc_html($status_label); ?></span>
+                </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="sbt-confirmation-actions">
+                <button type="button" class="sbt-btn sbt-btn-primary sbt-export-pdf">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Download PDF
+                </button>
+                <button type="button" class="sbt-btn sbt-btn-secondary sbt-print-confirmation">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                    </svg>
+                    Print
+                </button>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="sbt-confirmation-content-grid">
+                <!-- Left Column: Tour Details -->
+                <div class="sbt-confirmation-section">
+                    <h2 class="sbt-section-title">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                        </svg>
+                        Tour Details
+                    </h2>
+
+                    <div class="sbt-tours-list">
+                        <?php foreach ($tour_ids as $index => $tour_id):
+                            $tour = get_post($tour_id);
+                            if (!$tour) continue;
+
+                            $tour_type = get_field('tour_type', $tour_id);
+                            $duration = get_field('tour_duration', $tour_id);
+                            $departure_time = get_field('tour_departure_time', $tour_id);
+                            $departure_location = get_field('tour_departure_location', $tour_id);
+                            $price = get_field('tour_price', $tour_id);
+                            $price_per_person = get_field('tour_price_per_person', $tour_id);
+                        ?>
+                        <div class="sbt-tour-item">
+                            <?php if (has_post_thumbnail($tour_id)): ?>
+                            <div class="sbt-tour-thumbnail">
+                                <?php echo get_the_post_thumbnail($tour_id, 'medium'); ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <div class="sbt-tour-info">
+                                <h3 class="sbt-tour-name"><?php echo get_the_title($tour_id); ?></h3>
+
+                                <?php if ($tour_type): ?>
+                                <span class="sbt-tour-type-label"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
+                                <?php endif; ?>
+
+                                <div class="sbt-tour-meta-list">
+                                    <?php if ($duration): ?>
+                                    <div class="sbt-meta-row">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                        </svg>
+                                        <span>Duration: <?php echo esc_html($duration); ?> hours</span>
+                                    </div>
+                                    <?php endif; ?>
+
+                                    <?php if ($departure_time): ?>
+                                    <div class="sbt-meta-row">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527z"/>
+                                        </svg>
+                                        <span>Departure: <?php echo esc_html($departure_time); ?></span>
+                                    </div>
+                                    <?php endif; ?>
+
+                                    <?php if ($departure_location): ?>
+                                    <div class="sbt-meta-row">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                        </svg>
+                                        <span>Location: <?php echo esc_html($departure_location); ?></span>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Dates Section -->
+                    <div class="sbt-detail-group">
+                        <h3 class="sbt-detail-title">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                            </svg>
+                            Booking Date<?php echo count($dates) > 1 ? 's' : ''; ?>
+                        </h3>
+                        <div class="sbt-dates-list">
+                            <?php foreach ($dates as $date): ?>
+                            <div class="sbt-date-item"><?php echo esc_html(date('l, F j, Y', strtotime($date))); ?></div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Destinations Section -->
+                    <?php if (!empty($destinations) && is_array($destinations)): ?>
+                    <div class="sbt-detail-group">
+                        <h3 class="sbt-detail-title">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                            </svg>
+                            Route
+                        </h3>
+                        <div class="sbt-destinations-route">
+                            <?php echo implode(' → ', array_map('esc_html', $destinations)); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Passengers -->
+                    <div class="sbt-detail-group">
+                        <h3 class="sbt-detail-title">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+                                <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                            </svg>
+                            Number of Passengers
+                        </h3>
+                        <div class="sbt-detail-value"><?php echo esc_html($passengers); ?> passenger<?php echo $passengers > 1 ? 's' : ''; ?></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Booking & Customer Info -->
+                <div class="sbt-confirmation-sidebar">
+                    <!-- Booking Summary -->
+                    <div class="sbt-confirmation-section">
+                        <h2 class="sbt-section-title">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                            </svg>
+                            Booking Summary
+                        </h2>
+
+                        <div class="sbt-summary-rows">
+                            <div class="sbt-summary-row">
+                                <span class="sbt-summary-label">Booking Date</span>
+                                <span class="sbt-summary-value"><?php echo esc_html($created_date); ?> at <?php echo esc_html($created_time); ?></span>
+                            </div>
+
+                            <div class="sbt-summary-row">
+                                <span class="sbt-summary-label">Confirmation Code</span>
+                                <span class="sbt-summary-value sbt-code-highlight"><?php echo esc_html($confirmation_code); ?></span>
+                            </div>
+
+                            <?php if ($payment_method): ?>
+                            <div class="sbt-summary-row">
+                                <span class="sbt-summary-label">Payment Method</span>
+                                <span class="sbt-summary-value"><?php echo esc_html(ucfirst($payment_method)); ?></span>
+                            </div>
+                            <?php endif; ?>
+
+                            <div class="sbt-summary-divider"></div>
+
+                            <div class="sbt-summary-row sbt-summary-total">
+                                <span class="sbt-summary-label">Total Amount</span>
+                                <span class="sbt-summary-value">€<?php echo number_format($total_amount, 2); ?></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="sbt-confirmation-section">
+                        <h2 class="sbt-section-title">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            </svg>
+                            Customer Information
+                        </h2>
+
+                        <div class="sbt-customer-info">
+                            <div class="sbt-info-row">
+                                <span class="sbt-info-label">Name</span>
+                                <span class="sbt-info-value"><?php echo esc_html($first_name . ' ' . $last_name); ?></span>
+                            </div>
+
+                            <div class="sbt-info-row">
+                                <span class="sbt-info-label">Email</span>
+                                <span class="sbt-info-value"><?php echo esc_html($email); ?></span>
+                            </div>
+
+                            <div class="sbt-info-row">
+                                <span class="sbt-info-label">Phone</span>
+                                <span class="sbt-info-value"><?php echo esc_html($phone); ?></span>
+                            </div>
+
+                            <?php if ($country): ?>
+                            <div class="sbt-info-row">
+                                <span class="sbt-info-label">Country</span>
+                                <span class="sbt-info-value"><?php echo esc_html($country); ?></span>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if ($special_requests): ?>
+                            <div class="sbt-info-row sbt-info-full">
+                                <span class="sbt-info-label">Special Requests</span>
+                                <span class="sbt-info-value"><?php echo esc_html($special_requests); ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Important Information -->
+                    <div class="sbt-confirmation-section sbt-important-info">
+                        <h3 class="sbt-info-title">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                            Important Information
+                        </h3>
+                        <ul class="sbt-info-list">
+                            <li>Please arrive 15 minutes before departure time</li>
+                            <li>Bring your confirmation code or this printout</li>
+                            <li>Cancellations must be made 24 hours in advance</li>
+                            <li>Check weather conditions before your tour</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="sbt-confirmation-footer">
+                <p>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+                    </svg>
+                    A confirmation email has been sent to <strong><?php echo esc_html($email); ?></strong>
+                </p>
+                <p>If you have any questions, please contact us or reply to the confirmation email.</p>
             </div>
         </div>
         <?php

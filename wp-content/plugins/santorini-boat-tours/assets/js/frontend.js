@@ -28,6 +28,8 @@
             $(document).on('click', '.sbt-add-destination', this.addDestination);
             $(document).on('click', '.sbt-remove-destination', this.removeDestination);
             $(document).on('click', '.sbt-download-summary', this.downloadSummaryPDF);
+            $(document).on('click', '.sbt-export-pdf', this.exportConfirmationPDF);
+            $(document).on('click', '.sbt-print-confirmation', this.printConfirmation);
             $(document).on('click', '.sbt-gallery-image', this.openLightbox);
             $(document).on('click', '.sbt-lightbox-close', this.closeLightbox);
             $(document).on('click', '.sbt-lightbox-overlay', this.closeLightbox);
@@ -952,8 +954,8 @@
                     $submitBtn.prop('disabled', true).html('<span class="sbt-loading"></span> Processing...');
                 },
                 success: function(response) {
-                    // Redirect to payment page
-                    window.location.href = `/booking-payment?code=${response.confirmation_code}`;
+                    // Redirect to confirmation page
+                    window.location.href = `/booking-confirmation/?code=${response.confirmation_code}`;
                 },
                 error: function(xhr) {
                     const error = xhr.responseJSON || {};
@@ -1227,6 +1229,330 @@
                 //     printWindow.close();
                 // };
             };
+        },
+
+        exportConfirmationPDF: function(e) {
+            e.preventDefault();
+
+            const $container = $('.sbt-booking-confirmation');
+            const confirmationCode = $container.data('confirmation-code');
+
+            // Clone the confirmation content
+            const $clone = $container.clone();
+
+            // Remove action buttons from clone
+            $clone.find('.sbt-confirmation-actions').remove();
+
+            // Create printable HTML
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Booking Confirmation - ${confirmationCode}</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            line-height: 1.6;
+                            color: #1f2937;
+                            background: #f9fafb;
+                            padding: 40px 20px;
+                        }
+                        .container {
+                            max-width: 900px;
+                            margin: 0 auto;
+                            background: white;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+                            color: white;
+                            padding: 40px 30px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            font-size: 32px;
+                            margin-bottom: 10px;
+                            font-weight: 700;
+                        }
+                        .header p {
+                            font-size: 16px;
+                            opacity: 0.9;
+                        }
+                        .confirmation-code {
+                            background: rgba(255, 255, 255, 0.2);
+                            padding: 15px 30px;
+                            border-radius: 8px;
+                            margin: 20px auto 0;
+                            display: inline-block;
+                            font-size: 14px;
+                        }
+                        .confirmation-code .code {
+                            font-size: 24px;
+                            font-weight: 700;
+                            letter-spacing: 2px;
+                            display: block;
+                            margin-top: 5px;
+                        }
+                        .status-badge {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                            padding: 8px 16px;
+                            border-radius: 20px;
+                            font-weight: 600;
+                            font-size: 14px;
+                            margin-top: 15px;
+                        }
+                        .sbt-status-confirmed {
+                            background: #d1fae5;
+                            color: #065f46;
+                        }
+                        .sbt-status-pending {
+                            background: #fef3c7;
+                            color: #92400e;
+                        }
+                        .content {
+                            padding: 40px 30px;
+                        }
+                        .section {
+                            margin-bottom: 30px;
+                            padding-bottom: 30px;
+                            border-bottom: 1px solid #e5e7eb;
+                        }
+                        .section:last-child {
+                            border-bottom: none;
+                        }
+                        .section-title {
+                            font-size: 20px;
+                            font-weight: 700;
+                            color: #1e3a8a;
+                            margin-bottom: 20px;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        }
+                        .tour-item {
+                            background: #f9fafb;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 15px;
+                        }
+                        .tour-item h3 {
+                            color: #1f2937;
+                            font-size: 18px;
+                            margin-bottom: 10px;
+                        }
+                        .tour-type-label {
+                            display: inline-block;
+                            background: #dbeafe;
+                            color: #1e40af;
+                            padding: 4px 12px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            font-weight: 600;
+                            margin-bottom: 10px;
+                        }
+                        .tour-meta-list {
+                            margin-top: 15px;
+                        }
+                        .sbt-meta-row {
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            color: #6b7280;
+                            font-size: 14px;
+                            margin-bottom: 8px;
+                        }
+                        .detail-group {
+                            margin: 20px 0;
+                        }
+                        .detail-title {
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: #374151;
+                            margin-bottom: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .detail-value {
+                            color: #1f2937;
+                            font-size: 15px;
+                            padding: 10px 15px;
+                            background: #f9fafb;
+                            border-radius: 6px;
+                        }
+                        .dates-list {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                        }
+                        .date-item {
+                            background: #eff6ff;
+                            color: #1e40af;
+                            padding: 10px 15px;
+                            border-radius: 6px;
+                            font-weight: 500;
+                        }
+                        .destinations-route {
+                            background: #f0fdf4;
+                            color: #166534;
+                            padding: 12px 15px;
+                            border-radius: 6px;
+                            font-weight: 500;
+                            font-size: 15px;
+                        }
+                        .summary-rows, .customer-info {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                        .summary-row, .info-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 12px 0;
+                            border-bottom: 1px solid #f3f4f6;
+                        }
+                        .summary-label, .info-label {
+                            color: #6b7280;
+                            font-weight: 500;
+                        }
+                        .summary-value, .info-value {
+                            color: #1f2937;
+                            font-weight: 600;
+                            text-align: right;
+                        }
+                        .summary-total {
+                            background: #1e3a8a;
+                            color: white;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-top: 10px;
+                            font-size: 18px;
+                        }
+                        .summary-total .summary-value {
+                            color: white;
+                            font-size: 20px;
+                        }
+                        .summary-divider {
+                            height: 1px;
+                            background: #e5e7eb;
+                            margin: 15px 0;
+                        }
+                        .code-highlight {
+                            background: #fef3c7;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-family: monospace;
+                            font-weight: 700;
+                            color: #92400e;
+                        }
+                        .important-info {
+                            background: #fef3c7;
+                            padding: 20px;
+                            border-radius: 8px;
+                            border-left: 4px solid #f59e0b;
+                        }
+                        .info-title {
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #92400e;
+                            margin-bottom: 15px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .info-list {
+                            list-style: none;
+                            padding: 0;
+                        }
+                        .info-list li {
+                            padding: 8px 0;
+                            color: #78350f;
+                            font-size: 14px;
+                        }
+                        .info-list li:before {
+                            content: "• ";
+                            color: #f59e0b;
+                            font-weight: bold;
+                            margin-right: 8px;
+                        }
+                        .footer {
+                            background: #f9fafb;
+                            padding: 30px;
+                            text-align: center;
+                            color: #6b7280;
+                            font-size: 14px;
+                            line-height: 1.8;
+                        }
+                        .footer strong {
+                            color: #1f2937;
+                            display: block;
+                            font-size: 16px;
+                            margin-bottom: 10px;
+                        }
+                        svg {
+                            display: none;
+                        }
+                        .grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 30px;
+                        }
+                        @media print {
+                            body {
+                                background: white;
+                                padding: 0;
+                            }
+                            .container {
+                                box-shadow: none;
+                            }
+                        }
+                        @page {
+                            margin: 2cm;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        ${$clone.html()}
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Open print dialog
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+
+            // Wait for content to load then print
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        },
+
+        printConfirmation: function(e) {
+            e.preventDefault();
+
+            // Hide action buttons for printing
+            $('.sbt-confirmation-actions').hide();
+
+            // Print
+            window.print();
+
+            // Show action buttons again
+            setTimeout(function() {
+                $('.sbt-confirmation-actions').show();
+            }, 100);
         }
     };
     
