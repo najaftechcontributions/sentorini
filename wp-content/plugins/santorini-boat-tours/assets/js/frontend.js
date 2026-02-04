@@ -152,6 +152,7 @@
 
             $form.find('[required]').each(function() {
                 if (!SBT.validateField($(this))) {
+                    console.log($(this));
                     isValid = false;
                 }
             });
@@ -160,13 +161,15 @@
             const $terms = $('#sbt-terms');
             if ($terms.length && !$terms.is(':checked')) {
                 $terms.siblings('.sbt-field-error').show();
+                console.log($terms);
                 isValid = false;
             }
 
-            // Check payment method
-            const paymentMethod = $('input[name="payment_method"]:checked').val();
+            // Check payment method (handle both radio buttons and hidden input for free bookings)
+            const paymentMethod = $('input[name="payment_method"]:checked').val() || $('input[name="payment_method"][type="hidden"]').val();
             if (!paymentMethod) {
                 $('input[name="payment_method"]').closest('.sbt-form-group').find('.sbt-field-error').show();
+                console.log('payment error');
                 isValid = false;
             }
 

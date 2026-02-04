@@ -138,7 +138,7 @@ class Santorini_Boat_Tours {
         wp_localize_script('sbt-frontend', 'sbtData', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'restUrl' => rest_url('sbt/v1/'),
-            'nonce' => wp_create_nonce('sbt-nonce'),
+            'nonce' => wp_create_nonce('wp_rest'),
             'stripeKey' => get_option('sbt_stripe_publishable_key', ''),
             'recaptchaSiteKey' => get_option('sbt_recaptcha_site_key', '')
         ]);
