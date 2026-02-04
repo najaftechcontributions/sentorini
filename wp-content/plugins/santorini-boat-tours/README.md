@@ -60,6 +60,190 @@ santorini-boat-tours/
 └── README.md                   # This file
 ```
 
+## 📝 WordPress Shortcodes
+
+All shortcodes support **URL parameters** for dynamic content and pre-population. You can use shortcodes in any WordPress page, post, or widget.
+
+### Booking Form / Widget
+Display the complete 4-step booking process.
+
+**Shortcodes:** `[sbt_booking_widget]` or `[sbt_booking_form]`
+
+**Attributes:**
+- `show_steps` (true/false) - Show step indicators (default: true)
+- `tour` - Pre-select tour by type (e.g., "morning", "sunset")
+- `tour_id` - Pre-select tour by ID
+- `date` - Pre-select date (format: YYYY-MM-DD)
+- `passengers` - Pre-select passenger count (default: 1)
+
+**Examples:**
+```
+[sbt_booking_widget]
+[sbt_booking_form show_steps="true"]
+[sbt_booking_widget tour="morning" passengers="2"]
+```
+
+**URL Parameters:**
+- `?tour=morning` - Pre-select Morning Tour
+- `?tour_id=123` - Pre-select tour by ID
+- `?date=2024-08-15` - Pre-select date
+- `?passengers=4` - Pre-select passenger count
+- `?tour=sunset&date=2024-08-15&passengers=2` - Combine multiple
+
+**Full Example:**
+```
+Page URL: https://yoursite.com/book/?tour=morning&date=2024-08-15&passengers=2
+Shortcode: [sbt_booking_widget]
+Result: Booking form with Morning Tour, Aug 15, 2024, and 2 passengers pre-selected
+```
+
+---
+
+### Tour Archive / List
+Display a grid/list of all tours with optional filtering.
+
+**Shortcodes:** `[sbt_tour_list]` or `[sbt_tour_archive]`
+
+**Attributes:**
+- `type` - Filter by tour type (e.g., "morning", "sunset", "private")
+- `columns` - Number of columns (default: 2)
+- `limit` - Maximum tours to show (default: -1 for all)
+- `show_all` - Show filter dropdown (default: true)
+
+**Examples:**
+```
+[sbt_tour_list]
+[sbt_tour_archive columns="3"]
+[sbt_tour_list type="morning" columns="2" limit="4"]
+[sbt_tour_archive show_all="false"]
+```
+
+**URL Parameters:**
+- `?tour=morning` - Filter to morning tours
+- `?tour_type=sunset` - Filter to sunset tours
+
+**Full Example:**
+```
+Page URL: https://yoursite.com/tours/?tour=sunset
+Shortcode: [sbt_tour_archive columns="3"]
+Result: Shows only sunset tours in 3-column grid
+```
+
+---
+
+### Single Tour Card
+Display details for a specific tour.
+
+**Shortcodes:** `[sbt_tour_card]` or `[sbt_single_tour]`
+
+**Attributes:**
+- `id` - Tour ID to display
+- `tour_type` - Tour type slug (alternative to ID)
+
+**Examples:**
+```
+[sbt_tour_card id="123"]
+[sbt_single_tour id="456"]
+[sbt_tour_card tour_type="morning"]
+```
+
+**URL Parameters:**
+- `?tour_id=123` - Display tour with ID 123
+- `?tour=morning` - Display tour by type
+
+**Full Example:**
+```
+Page URL: https://yoursite.com/tour-details/?tour_id=123
+Shortcode: [sbt_single_tour]
+Result: Displays tour #123 with all details and Book Now button
+```
+
+---
+
+### Availability Calendar
+Display an interactive calendar with tour availability.
+
+**Shortcode:** `[sbt_availability_calendar]`
+
+**Attributes:**
+- `date` - Pre-select a date (format: YYYY-MM-DD)
+- `tour_id` - Show availability for specific tour
+
+**Examples:**
+```
+[sbt_availability_calendar]
+[sbt_availability_calendar tour_id="123"]
+```
+
+**URL Parameters:**
+- `?date=2024-08-15` - Pre-select August 15, 2024
+- `?tour_id=123` - Show availability for tour #123
+
+**Full Example:**
+```
+Page URL: https://yoursite.com/calendar/?tour_id=123&date=2024-08-15
+Shortcode: [sbt_availability_calendar]
+Result: Calendar opens to August 2024 with the 15th pre-selected
+```
+
+---
+
+### Complete URL Parameter Reference
+
+**Supported Parameters:**
+| Parameter | Description | Format | Example |
+|-----------|-------------|--------|---------|
+| `tour` | Tour type slug | String | `?tour=morning` |
+| `tour_type` | Alias for `tour` | String | `?tour_type=sunset` |
+| `tour_id` | Specific tour ID | Number | `?tour_id=123` |
+| `date` | Pre-select date | YYYY-MM-DD | `?date=2024-08-15` |
+| `passengers` | Passenger count | Number | `?passengers=4` |
+
+**Combining Parameters:**
+```
+?tour=morning&date=2024-08-15&passengers=2
+?tour_id=123&date=2024-09-01
+?tour_type=sunset&passengers=5
+```
+
+---
+
+### Page Setup Examples
+
+**Booking Page:**
+```
+URL: /book/
+Shortcode: [sbt_booking_form]
+User visits: /book/?tour=morning&passengers=2
+Result: Booking form with Morning Tour and 2 passengers pre-selected
+```
+
+**Tours Archive Page:**
+```
+URL: /tours/
+Shortcode: [sbt_tour_archive columns="3" show_all="true"]
+User visits: /tours/?tour=sunset
+Result: Filtered list showing only Sunset tours
+```
+
+**Single Tour Page:**
+```
+URL: /tour/
+Shortcode: [sbt_single_tour]
+User visits: /tour/?tour_id=123
+Result: Displays tour #123 details with booking button
+```
+
+**Dynamic Booking Links:**
+From tour archive to booking form:
+```html
+<a href="/book/?tour_id=<?php echo get_the_ID(); ?>&passengers=2">
+    Book Now for 2
+</a>
+```
+
+---
+
 ## 🎨 Builder.io Components
 
 ### TourCard

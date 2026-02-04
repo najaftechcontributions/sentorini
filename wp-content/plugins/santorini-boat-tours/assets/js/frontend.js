@@ -33,34 +33,110 @@
         initCalendar: function() {
             const $calendar = $('.sbt-calendar');
             if (!$calendar.length) return;
-            
-            const today = new Date();
-            this.renderCalendar(today.getFullYear(), today.getMonth());
+
+            // Check for preselected date from data attribute
+            const preselectDate = $calendar.data('preselect-date');
+            if (preselectDate) {
+                this.selectedDate = preselectDate;
+                const dateObj = new Date(preselectDate);
+                this.renderCalendar(dateObj.getFullYear(), dateObj.getMonth());
+            } else {
+                const today = new Date();
+                this.renderCalendar(today.getFullYear(), today.getMonth());
+            }
+
+            // Add event listeners for calendar navigation
+            $('.sbt-calendar-prev').on('click', () => {
+                this.currentMonth = this.currentMonth || new Date().getMonth();
+                this.currentYear = this.currentYear || new Date().getFullYear();
+                this.currentMonth--;
+                if (this.currentMonth < 0) {
+                    this.currentMonth = 11;
+                    this.currentYear--;
+                }
+                this.renderCalendar(this.currentYear, this.currentMonth);
+            });
+
+            $('.sbt-calendar-next').on('click', () => {
+                this.currentMonth = this.currentMonth || new Date().getMonth();
+                this.currentYear = this.currentYear || new Date().getFullYear();
+                this.currentMonth++;
+                if (this.currentMonth > 11) {
+                    this.currentMonth = 0;
+                    this.currentYear++;
+                }
+                this.renderCalendar(this.currentYear, this.currentMonth);
+            });
         },
         
         initURLFilters: function() {
-            if (typeof window.sbtUrlParams === 'undefined') return;
-            
-            const params = window.sbtUrlParams;
-            
-            // Auto-select tour if filter is set
-            if (params.tour_filter) {
-                const $tourOption = $(`.sbt-tour-option[data-tour-type="${params.tour_filter}"]`);
-                if ($tourOption.length) {
-                    $tourOption.trigger('click');
+            // Check for URL parameters from localized script
+            if (typeof window.sbtUrlParams !== 'undefined') {
+                const params = window.sbtUrlParams;
+
+                // Auto-select tour by tour_id
+                if (params.tour_id) {
+                    const $tourOption = $(`.sbt-tour-option[data-tour-id="${params.tour_id}"]`);
+                    if ($tourOption.length) {
+                        $tourOption.trigger('click');
+                    }
+                }
+
+                // Auto-select tour by tour_type (for backward compatibility)
+                if (!params.tour_id && (params.tour || params.tour_type)) {
+                    const tourType = params.tour || params.tour_type;
+                    const $tourOption = $(`.sbt-tour-option[data-tour-type="${tourType}"]`);
+                    if ($tourOption.length) {
+                        $tourOption.trigger('click');
+                    }
+                }
+
+                // Auto-select date if set
+                if (params.date) {
+                    this.selectedDate = params.date;
+                }
+
+                // Auto-set passenger count if set
+                if (params.passengers && params.passengers > 0) {
+                    this.passengerCount = parseInt(params.passengers);
+                    $('.sbt-counter-value').text(this.passengerCount);
+                    // Update button states
+                    $('.sbt-counter-btn[data-action="decrement"]').prop('disabled', this.passengerCount <= 1);
                 }
             }
-            
-            // Auto-select date if set
-            if (params.tour_date) {
-                this.selectedDate = params.tour_date;
+
+            // Check for data attributes from shortcode
+            const $widget = $('.sbt-booking-widget');
+            if ($widget.length) {
+                const preselectedTourId = $widget.data('preselect-tour');
+                const preselectedDate = $widget.data('preselect-date');
+                const preselectedPassengers = $widget.data('preselect-passengers');
+
+                if (preselectedTourId) {
+                    const $tourOption = $(`.sbt-tour-option[data-tour-id="${preselectedTourId}"]`);
+                    if ($tourOption.length) {
+                        setTimeout(() => $tourOption.trigger('click'), 100);
+                    }
+                }
+
+                if (preselectedDate) {
+                    this.selectedDate = preselectedDate;
+                }
+
+                if (preselectedPassengers && preselectedPassengers > 0) {
+                    this.passengerCount = parseInt(preselectedPassengers);
+                    $('.sbt-counter-value').text(this.passengerCount);
+                    $('.sbt-counter-btn[data-action="decrement"]').prop('disabled', this.passengerCount <= 1);
+                }
             }
-            
-            // Auto-set passenger count if set
-            if (params.tour_passengers) {
-                this.passengerCount = parseInt(params.tour_passengers);
-                $('.sbt-counter-value').text(this.passengerCount);
-            }
+
+            // Initialize tour type filter dropdown
+            $('.sbt-tour-type-filter').on('change', function() {
+                const tourType = $(this).val();
+                const currentUrl = window.location.pathname;
+                const newUrl = tourType ? `${currentUrl}?tour=${tourType}` : currentUrl;
+                window.location.href = newUrl;
+            });
         },
         
         selectTour: function(e) {
@@ -161,11 +237,15 @@
         renderCalendar: function(year, month) {
             const $calendar = $('.sbt-calendar-grid');
             if (!$calendar.length) return;
-            
+
+            // Store current month/year
+            this.currentMonth = month;
+            this.currentYear = year;
+
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
-            
+
             $('.sbt-calendar-title').text(
                 new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
             );

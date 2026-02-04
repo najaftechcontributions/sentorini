@@ -24,23 +24,65 @@ class SBT_Shortcodes {
     
     public function register_shortcodes() {
         add_shortcode('sbt_booking_widget', [$this, 'booking_widget']);
+        add_shortcode('sbt_booking_form', [$this, 'booking_widget']); // Alias
         add_shortcode('sbt_tour_list', [$this, 'tour_list']);
+        add_shortcode('sbt_tour_archive', [$this, 'tour_list']); // Alias for archive
         add_shortcode('sbt_tour_card', [$this, 'tour_card']);
+        add_shortcode('sbt_single_tour', [$this, 'tour_card']); // Alias
         add_shortcode('sbt_availability_calendar', [$this, 'availability_calendar']);
+    }
+
+    /**
+     * Get URL parameter value
+     */
+    private function get_url_param($key, $default = '') {
+        if (isset($_GET[$key])) {
+            return sanitize_text_field($_GET[$key]);
+        }
+        return $default;
     }
     
     /**
      * Booking Widget Shortcode
-     * Usage: [sbt_booking_widget]
+     * Usage: [sbt_booking_widget] or [sbt_booking_form]
+     * URL Parameters: ?tour=morning&date=2024-01-15&passengers=2&tour_id=123
      */
     public function booking_widget($atts) {
         $atts = shortcode_atts([
-            'show_steps' => 'true'
+            'show_steps' => 'true',
+            'tour' => $this->get_url_param('tour'),
+            'tour_id' => $this->get_url_param('tour_id'),
+            'date' => $this->get_url_param('date'),
+            'passengers' => $this->get_url_param('passengers', '1')
         ], $atts);
-        
+
+        // Convert tour type to tour ID if provided
+        $preselected_tour_id = 0;
+        if (!empty($atts['tour_id'])) {
+            $preselected_tour_id = intval($atts['tour_id']);
+        } elseif (!empty($atts['tour'])) {
+            // Find tour by tour_type meta
+            $tours = get_posts([
+                'post_type' => 'sbt_tour',
+                'posts_per_page' => 1,
+                'meta_query' => [
+                    [
+                        'key' => 'tour_type',
+                        'value' => $atts['tour']
+                    ]
+                ]
+            ]);
+            if (!empty($tours)) {
+                $preselected_tour_id = $tours[0]->ID;
+            }
+        }
+
         ob_start();
         ?>
-        <div class="sbt-booking-widget">
+        <div class="sbt-booking-widget"
+             data-preselect-tour="<?php echo esc_attr($preselected_tour_id); ?>"
+             data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
+             data-preselect-passengers="<?php echo esc_attr($atts['passengers']); ?>">
             <?php if ($atts['show_steps'] === 'true'): ?>
             <div class="sbt-booking-steps">
                 <div class="sbt-booking-step active" data-step="1">
@@ -172,27 +214,33 @@ class SBT_Shortcodes {
     }
     
     /**
-     * Tour List Shortcode
-     * Usage: [sbt_tour_list type="morning" columns="3"]
+     * Tour List Shortcode (Archive)
+     * Usage: [sbt_tour_list type="morning" columns="3"] or [sbt_tour_archive]
+     * URL Parameters: ?tour=morning or ?tour_type=sunset
      */
     public function tour_list($atts) {
         $atts = shortcode_atts([
-            'type' => '',
+            'type' => $this->get_url_param('tour', $this->get_url_param('tour_type', '')),
             'columns' => '2',
-            'limit' => -1
+            'limit' => -1,
+            'show_all' => 'true'
         ], $atts);
-        
+
         $args = [
             'post_type' => 'sbt_tour',
             'posts_per_page' => intval($atts['limit']),
-            'post_status' => 'publish'
+            'post_status' => 'publish',
+            'orderby' => 'menu_order title',
+            'order' => 'ASC'
         ];
-        
+
+        // Filter by tour type if specified
         if (!empty($atts['type'])) {
             $args['meta_query'] = [
                 [
                     'key' => 'tour_type',
-                    'value' => $atts['type']
+                    'value' => $atts['type'],
+                    'compare' => '='
                 ]
             ];
         }
@@ -203,64 +251,116 @@ class SBT_Shortcodes {
             return '<p>No tours available.</p>';
         }
         
+        // Get all tour types for filter
+        $tour_types = [];
+        if ($atts['show_all'] === 'true') {
+            $all_tours = get_posts([
+                'post_type' => 'sbt_tour',
+                'posts_per_page' => -1,
+                'post_status' => 'publish'
+            ]);
+            foreach ($all_tours as $tour) {
+                $type = get_field('tour_type', $tour->ID);
+                if ($type && !isset($tour_types[$type])) {
+                    $tour_types[$type] = ucwords(str_replace('_', ' ', $type));
+                }
+            }
+        }
+
         ob_start();
         ?>
-        <div class="sbt-tour-list sbt-tour-columns-<?php echo esc_attr($atts['columns']); ?>">
-            <?php while ($tours->have_posts()): $tours->the_post(); ?>
-                <div class="sbt-tour-option" data-tour-id="<?php echo get_the_ID(); ?>" data-tour-type="<?php echo esc_attr(get_field('tour_type')); ?>">
-                    <input type="radio" name="tour" value="<?php echo get_the_ID(); ?>" id="tour-<?php echo get_the_ID(); ?>">
-                    <label for="tour-<?php echo get_the_ID(); ?>">
-                        <?php if (has_post_thumbnail()): ?>
-                        <div class="sbt-tour-image">
-                            <?php the_post_thumbnail('medium'); ?>
-                        </div>
-                        <?php endif; ?>
-                        <div class="sbt-tour-content">
-                            <h4 class="sbt-tour-title"><?php the_title(); ?></h4>
-                            <?php if (get_the_excerpt()): ?>
-                            <p class="sbt-tour-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 15); ?></p>
-                            <?php endif; ?>
-                            <div class="sbt-tour-meta">
-                                <?php if (get_field('tour_duration')): ?>
-                                <span class="sbt-tour-duration">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                                    </svg>
-                                    <?php echo get_field('tour_duration'); ?> hours
-                                </span>
-                                <?php endif; ?>
-                                <?php if (get_field('tour_price')): ?>
-                                <span class="sbt-tour-price">
-                                    €<?php echo number_format(get_field('tour_price'), 2); ?>
-                                    <?php if (get_field('tour_price_per_person')): ?>
-                                    <small>/person</small>
-                                    <?php endif; ?>
-                                </span>
-                                <?php endif; ?>
+        <div class="sbt-tour-archive-wrapper">
+            <?php if (!empty($tour_types)): ?>
+            <div class="sbt-tour-filters">
+                <label for="sbt-tour-filter">Filter Tours:</label>
+                <select id="sbt-tour-filter" class="sbt-tour-type-filter">
+                    <option value="">All Tours</option>
+                    <?php foreach ($tour_types as $type_value => $type_label): ?>
+                    <option value="<?php echo esc_attr($type_value); ?>" <?php selected($atts['type'], $type_value); ?>>
+                        <?php echo esc_html($type_label); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
+
+            <div class="sbt-tour-list sbt-tour-columns-<?php echo esc_attr($atts['columns']); ?>">
+                <?php while ($tours->have_posts()): $tours->the_post(); ?>
+                    <div class="sbt-tour-option" data-tour-id="<?php echo get_the_ID(); ?>" data-tour-type="<?php echo esc_attr(get_field('tour_type')); ?>">
+                        <input type="radio" name="tour" value="<?php echo get_the_ID(); ?>" id="tour-<?php echo get_the_ID(); ?>">
+                        <label for="tour-<?php echo get_the_ID(); ?>">
+                            <?php if (has_post_thumbnail()): ?>
+                            <div class="sbt-tour-image">
+                                <?php the_post_thumbnail('medium'); ?>
                             </div>
-                        </div>
-                    </label>
-                </div>
-            <?php endwhile; ?>
+                            <?php endif; ?>
+                            <div class="sbt-tour-content">
+                                <h4 class="sbt-tour-title"><?php the_title(); ?></h4>
+                                <?php if (get_the_excerpt()): ?>
+                                <p class="sbt-tour-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 15); ?></p>
+                                <?php endif; ?>
+                                <div class="sbt-tour-meta">
+                                    <?php if (get_field('tour_duration')): ?>
+                                    <span class="sbt-tour-duration">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                        </svg>
+                                        <?php echo get_field('tour_duration'); ?> hours
+                                    </span>
+                                    <?php endif; ?>
+                                    <?php if (get_field('tour_price')): ?>
+                                    <span class="sbt-tour-price">
+                                        €<?php echo number_format(get_field('tour_price'), 2); ?>
+                                        <?php if (get_field('tour_price_per_person')): ?>
+                                        <small>/person</small>
+                                        <?php endif; ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                <?php endwhile; ?>
+            </div>
         </div>
         <?php
         wp_reset_postdata();
-        return ob_get_clean();
-    }
+        return ob_get_clean()
+    }   
     
     /**
      * Single Tour Card Shortcode
-     * Usage: [sbt_tour_card id="123"]
+     * Usage: [sbt_tour_card id="123"] or [sbt_single_tour]
+     * URL Parameters: ?tour_id=123 or ?tour=morning
      */
     public function tour_card($atts) {
         $atts = shortcode_atts([
-            'id' => 0
+            'id' => $this->get_url_param('tour_id', 0),
+            'tour_type' => $this->get_url_param('tour', '')
         ], $atts);
-        
+
         $tour_id = intval($atts['id']);
+
+        // If no tour_id but tour_type is provided, find tour by type
+        if (!$tour_id && !empty($atts['tour_type'])) {
+            $tours = get_posts([
+                'post_type' => 'sbt_tour',
+                'posts_per_page' => 1,
+                'meta_query' => [
+                    [
+                        'key' => 'tour_type',
+                        'value' => $atts['tour_type']
+                    ]
+                ]
+            ]);
+            if (!empty($tours)) {
+                $tour_id = $tours[0]->ID;
+            }
+        }
+
         if (!$tour_id) {
-            return '<p>Invalid tour ID.</p>';
+            return '<p>No tour specified. Please provide a tour_id or tour parameter.</p>';
         }
         
         $tour = get_post($tour_id);
@@ -321,7 +421,7 @@ class SBT_Shortcodes {
                 </div>
                 <?php endif; ?>
                 
-                <a href="<?php echo home_url('/book/?tour=' . get_field('tour_type', $tour_id)); ?>" class="sbt-button">
+                <a href="<?php echo esc_url(add_query_arg(['tour_id' => $tour_id], get_permalink())); ?>" class="sbt-button sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
                     Book Now
                 </a>
             </div>
@@ -333,11 +433,19 @@ class SBT_Shortcodes {
     /**
      * Availability Calendar Shortcode
      * Usage: [sbt_availability_calendar]
+     * URL Parameters: ?date=2024-01-15
      */
     public function availability_calendar($atts) {
+        $atts = shortcode_atts([
+            'date' => $this->get_url_param('date'),
+            'tour_id' => $this->get_url_param('tour_id'),
+        ], $atts);
+
         ob_start();
         ?>
-        <div class="sbt-calendar">
+        <div class="sbt-calendar"
+             data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
+             data-tour-id="<?php echo esc_attr($atts['tour_id']); ?>">
             <div class="sbt-calendar-header">
                 <button type="button" class="sbt-calendar-nav sbt-calendar-prev">&lt;</button>
                 <h4 class="sbt-calendar-title"></h4>
