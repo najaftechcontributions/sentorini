@@ -416,7 +416,7 @@ class SBT_Shortcodes {
                     <article class="sbt-tour-card-archive" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>">
                         <?php if (has_post_thumbnail()): ?>
                         <div class="sbt-tour-card-image">
-                            <a href="<?php the_permalink(); ?>">
+                            <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
                                 <?php the_post_thumbnail('large'); ?>
                             </a>
                             <?php if ($tour_type): ?>
@@ -427,7 +427,7 @@ class SBT_Shortcodes {
 
                         <div class="sbt-tour-card-content">
                             <h3 class="sbt-tour-card-title">
-                                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>"><?php the_title(); ?></a>
                             </h3>
 
                             <?php if (get_the_excerpt()): ?>
@@ -477,7 +477,7 @@ class SBT_Shortcodes {
                                 </div>
                                 <?php endif; ?>
 
-                                <a href="<?php the_permalink(); ?>" class="sbt-btn sbt-btn-primary">
+                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary">
                                     View Details
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -706,7 +706,7 @@ class SBT_Shortcodes {
                                 </div>
                                 <?php endif; ?>
 
-                                <a href="#book-now" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
+                                <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
                                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
                                         <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
