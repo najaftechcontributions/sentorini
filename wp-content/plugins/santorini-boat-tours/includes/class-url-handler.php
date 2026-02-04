@@ -130,8 +130,7 @@ class SBT_URL_Handler {
         get_header();
 
         // Render booking form
-        echo '<div class="sbt-page-container">';
-        echo '<h1 class="sbt-page-title">Book Your Tour</h1>';
+        echo '<div class="sbt-page-container sbt-booking-page">';
 
         if ($tour_id) {
             echo do_shortcode('[sbt_booking_form tour_id="' . $tour_id . '"]');

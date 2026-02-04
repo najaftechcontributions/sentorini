@@ -632,6 +632,32 @@
     letter-spacing: 0.5px;
 }
 
+.sbt-tour-availability-section {
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--sbt-gray-50);
+    border-radius: 12px;
+}
+
+.sbt-availability-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sbt-availability-title svg {
+    color: var(--sbt-primary);
+}
+
+.sbt-tour-availability-section .sbt-calendar {
+    background: var(--sbt-white);
+    padding: 16px;
+}
+
 .sbt-booking-card-features {
     margin-top: 24px;
     padding-top: 24px;
@@ -653,16 +679,33 @@
 }
 
 /* =======================
+   PAGE CONTAINER
+   ======================= */
+
+.sbt-page-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.sbt-page-container.sbt-booking-page {
+    max-width: 100%;
+    padding: 0;
+}
+
+/* =======================
    BOOKING WIDGET
    ======================= */
 
 .sbt-booking-widget {
     background: var(--sbt-white);
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: var(--sbt-shadow-lg);
-    max-width: 900px;
+    border-radius: 0;
+    padding: 60px 40px;
+    box-shadow: none;
+    max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .sbt-booking-steps {
@@ -749,25 +792,75 @@
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
-.sbt-tour-option {
+.sbt-tours-grid.sbt-tour-selection {
+    gap: 24px;
+}
+
+.sbt-tour-card-archive.sbt-tour-option {
     position: relative;
-    border: 2px solid var(--sbt-gray-200);
+    border: 3px solid var(--sbt-gray-200);
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--sbt-white);
+}
+
+.sbt-tour-card-archive.sbt-tour-option:hover {
+    border-color: var(--sbt-primary-light);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.2);
+}
+
+.sbt-tour-card-archive.sbt-tour-option.selected {
+    border-color: var(--sbt-primary);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 12px 32px rgba(59, 130, 246, 0.3);
+    transform: translateY(-6px);
+}
+
+.sbt-tour-card-archive.sbt-tour-option::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid var(--sbt-gray-300);
+    background: var(--sbt-white);
+    z-index: 10;
     transition: all 0.3s ease;
 }
 
-.sbt-tour-option:hover {
-    border-color: var(--sbt-primary-light);
-    box-shadow: var(--sbt-shadow-md);
+.sbt-tour-card-archive.sbt-tour-option.selected::before {
+    background: var(--sbt-primary);
+    border-color: var(--sbt-primary);
+    box-shadow: 0 0 0 2px var(--sbt-white), 0 0 0 4px var(--sbt-primary);
 }
 
-.sbt-tour-option.selected,
-.sbt-tour-option input[type="radio"]:checked + label {
-    border-color: var(--sbt-primary);
-    background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+.sbt-tour-card-archive.sbt-tour-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--sbt-white);
+    font-size: 18px;
+    font-weight: 700;
+    z-index: 11;
+    animation: checkmark-pop 0.3s ease;
+}
+
+@keyframes checkmark-pop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .sbt-tour-option input[type="radio"] {
@@ -1291,23 +1384,27 @@
     .sbt-tour-hero-title {
         font-size: 32px;
     }
-    
+
     .sbt-tour-hero-image {
         height: 300px;
     }
-    
+
     .sbt-tours-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .sbt-tour-archive-header {
         flex-direction: column;
         gap: 20px;
         align-items: stretch;
     }
-    
+
     .sbt-booking-widget {
-        padding: 24px;
+        padding: 30px 20px;
+    }
+
+    .sbt-page-container {
+        padding: 20px 10px;
     }
     
     .sbt-booking-steps {

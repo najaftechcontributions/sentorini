@@ -736,6 +736,17 @@ class SBT_Shortcodes {
                                 </div>
                                 <?php endif; ?>
 
+                                <!-- Availability Calendar -->
+                                <div class="sbt-tour-availability-section">
+                                    <h4 class="sbt-availability-title">
+                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                        </svg>
+                                        Check Availability
+                                    </h4>
+                                    <?php echo do_shortcode('[sbt_availability_calendar tour_id="' . $tour_id . '"]'); ?>
+                                </div>
+
                                 <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
                                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
