@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shortcodes for Santorini Boat Tours
  */
@@ -7,22 +8,26 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class SBT_Shortcodes {
-    
+class SBT_Shortcodes
+{
+
     private static $instance = null;
-    
-    public static function instance() {
+
+    public static function instance()
+    {
         if (is_null(self::$instance)) {
             self::$instance = new self();
         }
         return self::$instance;
     }
-    
-    private function __construct() {
+
+    private function __construct()
+    {
         $this->register_shortcodes();
     }
-    
-    public function register_shortcodes() {
+
+    public function register_shortcodes()
+    {
         add_shortcode('sbt_booking_widget', [$this, 'booking_widget']);
         add_shortcode('sbt_booking_form', [$this, 'booking_widget']); // Alias
         add_shortcode('sbt_tour_list', [$this, 'tour_list']);
@@ -36,19 +41,21 @@ class SBT_Shortcodes {
     /**
      * Get URL parameter value
      */
-    private function get_url_param($key, $default = '') {
+    private function get_url_param($key, $default = '')
+    {
         if (isset($_GET[$key])) {
             return sanitize_text_field($_GET[$key]);
         }
         return $default;
     }
-    
+
     /**
      * Booking Widget Shortcode
      * Usage: [sbt_booking_widget] or [sbt_booking_form]
      * URL Parameters: ?id=123 or ?tour_id=123 or ?tour=morning&date=2024-01-15&passengers=2
      */
-    public function booking_widget($atts) {
+    public function booking_widget($atts)
+    {
         $atts = shortcode_atts([
             'show_steps' => 'true',
             'tour' => '',
@@ -94,32 +101,32 @@ class SBT_Shortcodes {
         }
 
         ob_start();
-        ?>
+?>
         <div class="sbt-booking-widget"
-             data-preselect-tour="<?php echo esc_attr($preselected_tour_id); ?>"
-             data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
-             data-preselect-passengers="<?php echo esc_attr($atts['passengers']); ?>">
+            data-preselect-tour="<?php echo esc_attr($preselected_tour_id); ?>"
+            data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
+            data-preselect-passengers="<?php echo esc_attr($atts['passengers']); ?>">
             <?php if ($atts['show_steps'] === 'true'): ?>
-            <div class="sbt-booking-steps">
-                <div class="sbt-booking-step active" data-step="1">
-                    <span class="sbt-step-number">1</span>
-                    <span class="sbt-step-label">Select Tour</span>
+                <div class="sbt-booking-steps">
+                    <div class="sbt-booking-step active" data-step="1">
+                        <span class="sbt-step-number">1</span>
+                        <span class="sbt-step-label">Select Tour</span>
+                    </div>
+                    <div class="sbt-booking-step" data-step="2">
+                        <span class="sbt-step-number">2</span>
+                        <span class="sbt-step-label">Choose Date</span>
+                    </div>
+                    <div class="sbt-booking-step" data-step="3">
+                        <span class="sbt-step-number">3</span>
+                        <span class="sbt-step-label">Passengers</span>
+                    </div>
+                    <div class="sbt-booking-step" data-step="4">
+                        <span class="sbt-step-number">4</span>
+                        <span class="sbt-step-label">Details</span>
+                    </div>
                 </div>
-                <div class="sbt-booking-step" data-step="2">
-                    <span class="sbt-step-number">2</span>
-                    <span class="sbt-step-label">Choose Date</span>
-                </div>
-                <div class="sbt-booking-step" data-step="3">
-                    <span class="sbt-step-number">3</span>
-                    <span class="sbt-step-label">Passengers</span>
-                </div>
-                <div class="sbt-booking-step" data-step="4">
-                    <span class="sbt-step-number">4</span>
-                    <span class="sbt-step-label">Details</span>
-                </div>
-            </div>
             <?php endif; ?>
-            
+
             <!-- Step 1: Select Tour -->
             <div class="sbt-step-content sbt-step-section" data-step="1">
                 <div class="sbt-step-header">
@@ -133,7 +140,7 @@ class SBT_Shortcodes {
                     <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
                 </div>
             </div>
-            
+
             <!-- Step 2: Choose Date(s) -->
             <div class="sbt-step-content sbt-step-section" data-step="2" style="display: none;">
                 <div class="sbt-step-header">
@@ -150,7 +157,7 @@ class SBT_Shortcodes {
                     <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
                 </div>
             </div>
-            
+
             <!-- Step 3: Passengers & Destinations -->
             <div class="sbt-step-content sbt-step-section" data-step="3" style="display: none;">
                 <div class="sbt-step-header">
@@ -170,7 +177,7 @@ class SBT_Shortcodes {
                     <div class="sbt-form-section sbt-destinations-section">
                         <h4 class="sbt-form-section-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                             </svg>
                             Multi-Destination Route
                         </h4>
@@ -185,7 +192,7 @@ class SBT_Shortcodes {
 
                         <button type="button" class="sbt-btn sbt-btn-secondary sbt-add-destination">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                             </svg>
                             Add Stop
                         </button>
@@ -196,15 +203,15 @@ class SBT_Shortcodes {
                     <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
                 </div>
             </div>
-            
+
             <!-- Step 4: Customer Details & Summary -->
             <div class="sbt-step-content sbt-step-section" data-step="4" style="display: none;">
                 <div class="sbt-booking-final-step">
                     <div class="sbt-booking-summary-card">
                         <h3 class="sbt-summary-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z" />
                             </svg>
                             Detailed Booking Summary
                         </h3>
@@ -213,7 +220,7 @@ class SBT_Shortcodes {
                             <div class="sbt-summary-item">
                                 <span class="sbt-summary-label">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
                                     </svg>
                                     Selected Tours
                                 </span>
@@ -223,7 +230,7 @@ class SBT_Shortcodes {
                             <div class="sbt-summary-item">
                                 <span class="sbt-summary-label">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                                     </svg>
                                     Dates
                                 </span>
@@ -233,9 +240,9 @@ class SBT_Shortcodes {
                             <div class="sbt-summary-item">
                                 <span class="sbt-summary-label">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                        <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
-                                        <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                        <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
+                                        <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
                                     </svg>
                                     Passengers
                                 </span>
@@ -245,7 +252,7 @@ class SBT_Shortcodes {
                             <div class="sbt-summary-item sbt-summary-destinations-row" style="display: none;">
                                 <span class="sbt-summary-label">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                                     </svg>
                                     Route
                                 </span>
@@ -264,7 +271,7 @@ class SBT_Shortcodes {
                     <div class="sbt-booking-form-card">
                         <h3 class="sbt-form-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
                             </svg>
                             Your Information
                         </h3>
@@ -321,51 +328,51 @@ class SBT_Shortcodes {
                             </div>
 
                             <?php if (get_option('sbt_require_payment', true)): ?>
-                            <div class="sbt-form-group">
-                                <label for="sbt-payment-method" class="sbt-form-label">
-                                    Payment Method <span class="sbt-required">*</span>
-                                </label>
-                                <div class="sbt-payment-methods">
-                                    <?php if (get_option('sbt_enable_stripe')): ?>
-                                    <label class="sbt-payment-option">
-                                        <input type="radio" name="payment_method" value="stripe" required>
-                                        <span class="sbt-payment-option-content">
-                                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/>
-                                                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/>
-                                            </svg>
-                                            <span>
-                                                <strong>Credit/Debit Card</strong>
-                                                <small>Secure payment via Stripe</small>
-                                            </span>
-                                        </span>
+                                <div class="sbt-form-group">
+                                    <label for="sbt-payment-method" class="sbt-form-label">
+                                        Payment Method <span class="sbt-required">*</span>
                                     </label>
-                                    <?php endif; ?>
+                                    <div class="sbt-payment-methods">
+                                        <?php if (get_option('sbt_enable_stripe')): ?>
+                                            <label class="sbt-payment-option">
+                                                <input type="radio" name="payment_method" value="stripe" required>
+                                                <span class="sbt-payment-option-content">
+                                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z" />
+                                                        <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z" />
+                                                    </svg>
+                                                    <span>
+                                                        <strong>Credit/Debit Card</strong>
+                                                        <small>Secure payment via Stripe</small>
+                                                    </span>
+                                                </span>
+                                            </label>
+                                        <?php endif; ?>
 
-                                    <?php if (get_option('sbt_enable_paypal')): ?>
-                                    <label class="sbt-payment-option">
-                                        <input type="radio" name="payment_method" value="paypal" required>
-                                        <span class="sbt-payment-option-content">
-                                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                                <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.351.351 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91.379-.27.712-.603.993-.991a4.047 4.047 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.687 2.687 0 0 0-.76-.59l-.094-.061zM6.543 8.82a.695.695 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016c.217.124.4.27.548.438.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.571-1.84.852-3.043.852h-.38a.873.873 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.352.352 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32.845-5.214z"/>
-                                            </svg>
-                                            <span>
-                                                <strong>PayPal</strong>
-                                                <small>Pay with PayPal account</small>
-                                            </span>
-                                        </span>
-                                    </label>
-                                    <?php endif; ?>
+                                        <?php if (get_option('sbt_enable_paypal')): ?>
+                                            <label class="sbt-payment-option">
+                                                <input type="radio" name="payment_method" value="paypal" required>
+                                                <span class="sbt-payment-option-content">
+                                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.351.351 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91.379-.27.712-.603.993-.991a4.047 4.047 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.687 2.687 0 0 0-.76-.59l-.094-.061zM6.543 8.82a.695.695 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016c.217.124.4.27.548.438.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.571-1.84.852-3.043.852h-.38a.873.873 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.352.352 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32.845-5.214z" />
+                                                    </svg>
+                                                    <span>
+                                                        <strong>PayPal</strong>
+                                                        <small>Pay with PayPal account</small>
+                                                    </span>
+                                                </span>
+                                            </label>
+                                        <?php endif; ?>
+                                    </div>
+                                    <span class="sbt-field-error" style="display: none;">Please select a payment method</span>
                                 </div>
-                                <span class="sbt-field-error" style="display: none;">Please select a payment method</span>
-                            </div>
                             <?php else: ?>
-                            <input type="hidden" name="payment_method" value="free">
-                            <div class="sbt-info-notice" style="padding: 16px; background: #dbeafe; border-left: 4px solid var(--sbt-primary); border-radius: 8px; margin: 20px 0;">
-                                <p style="margin: 0; color: var(--sbt-gray-700); font-size: 15px;">
-                                    <strong>Free Booking:</strong> No payment required. Your booking will be confirmed after submission.
-                                </p>
-                            </div>
+                                <input type="hidden" name="payment_method" value="free">
+                                <div class="sbt-info-notice" style="padding: 16px; background: #dbeafe; border-left: 4px solid var(--sbt-primary); border-radius: 8px; margin: 20px 0;">
+                                    <p style="margin: 0; color: var(--sbt-gray-700); font-size: 15px;">
+                                        <strong>Free Booking:</strong> No payment required. Your booking will be confirmed after submission.
+                                    </p>
+                                </div>
                             <?php endif; ?>
 
                             <div class="sbt-form-group">
@@ -381,13 +388,13 @@ class SBT_Shortcodes {
                             <div class="sbt-form-actions">
                                 <button type="button" class="sbt-btn sbt-btn-secondary sbt-step-prev">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
                                     </svg>
                                     Back
                                 </button>
                                 <button type="submit" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-submit-booking">
                                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                                        <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z" />
                                     </svg>
                                     <?php echo get_option('sbt_require_payment', true) ? 'Complete Booking & Pay' : 'Complete Booking'; ?>
                                 </button>
@@ -397,16 +404,17 @@ class SBT_Shortcodes {
                 </div>
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
-    
+
     /**
      * Tour List Shortcode (Archive)
      * Usage: [sbt_tour_list type="morning" columns="3"] or [sbt_tour_archive]
      * URL Parameters: ?tour=morning or ?tour_type=sunset
      */
-    public function tour_list($atts) {
+    public function tour_list($atts)
+    {
         $atts = shortcode_atts([
             'type' => '',
             'columns' => '3',
@@ -463,34 +471,34 @@ class SBT_Shortcodes {
         }
 
         ob_start();
-        ?>
+    ?>
         <div class="sbt-tour-archive">
             <?php if (!empty($tour_types) && $atts['show_filters'] === 'true'): ?>
-            <div class="sbt-tour-archive-header">
-                <div class="sbt-tour-count">
-                    <span class="sbt-count-number"><?php echo $tours->found_posts; ?></span>
-                    <span class="sbt-count-label">tour<?php echo $tours->found_posts !== 1 ? 's' : ''; ?> available</span>
-                </div>
+                <div class="sbt-tour-archive-header">
+                    <div class="sbt-tour-count">
+                        <span class="sbt-count-number"><?php echo $tours->found_posts; ?></span>
+                        <span class="sbt-count-label">tour<?php echo $tours->found_posts !== 1 ? 's' : ''; ?> available</span>
+                    </div>
 
-                <div class="sbt-tour-filters">
-                    <div class="sbt-filter-group">
-                        <label for="sbt-tour-filter" class="sbt-filter-label">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
-                            Filter by:
-                        </label>
-                        <select id="sbt-tour-filter" class="sbt-tour-type-filter">
-                            <option value="">All Tours</option>
-                            <?php foreach ($tour_types as $type_value => $type_label): ?>
-                            <option value="<?php echo esc_attr($type_value); ?>" <?php selected($atts['type'], $type_value); ?>>
-                                <?php echo esc_html($type_label); ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="sbt-tour-filters">
+                        <div class="sbt-filter-group">
+                            <label for="sbt-tour-filter" class="sbt-filter-label">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+                                </svg>
+                                Filter by:
+                            </label>
+                            <select id="sbt-tour-filter" class="sbt-tour-type-filter">
+                                <option value="">All Tours</option>
+                                <?php foreach ($tour_types as $type_value => $type_label): ?>
+                                    <option value="<?php echo esc_attr($type_value); ?>" <?php selected($atts['type'], $type_value); ?>>
+                                        <?php echo esc_html($type_label); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
             <?php endif; ?>
 
             <div class="sbt-tours-grid sbt-tours-columns-<?php echo esc_attr($atts['columns']); ?> sbt-view-<?php echo esc_attr($atts['view_mode']); ?> <?php echo $atts['selection_mode'] !== 'none' ? 'sbt-tour-selection' : ''; ?>">
@@ -510,30 +518,30 @@ class SBT_Shortcodes {
                 ?>
                     <article class="<?php echo $card_classes; ?>" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>" data-tour-price="<?php echo esc_attr($price); ?>" data-price-per-person="<?php echo $price_per_person ? 'true' : 'false'; ?>">
                         <?php if ($atts['selection_mode'] === 'checkbox'): ?>
-                        <div class="sbt-tour-checkbox-wrapper">
-                            <input type="checkbox" name="selected_tours[]" value="<?php echo $tour_id; ?>" class="sbt-tour-checkbox" id="tour-<?php echo $tour_id; ?>" />
-                            <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-checkbox-label"></label>
-                        </div>
+                            <div class="sbt-tour-checkbox-wrapper">
+                                <input type="checkbox" name="selected_tours[]" value="<?php echo $tour_id; ?>" class="sbt-tour-checkbox" id="tour-<?php echo $tour_id; ?>" />
+                                <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-checkbox-label"></label>
+                            </div>
                         <?php elseif ($atts['selection_mode'] === 'radio'): ?>
-                        <div class="sbt-tour-radio-wrapper">
-                            <input type="radio" name="selected_tour" value="<?php echo $tour_id; ?>" class="sbt-tour-radio" id="tour-<?php echo $tour_id; ?>" />
-                            <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-radio-label"></label>
-                        </div>
+                            <div class="sbt-tour-radio-wrapper">
+                                <input type="radio" name="selected_tour" value="<?php echo $tour_id; ?>" class="sbt-tour-radio" id="tour-<?php echo $tour_id; ?>" />
+                                <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-radio-label"></label>
+                            </div>
                         <?php endif; ?>
 
                         <?php if (has_post_thumbnail()): ?>
-                        <div class="sbt-tour-card-image">
-                            <?php if ($atts['selection_mode'] === 'none'): ?>
-                            <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
-                                <?php the_post_thumbnail('large'); ?>
-                            </a>
-                            <?php else: ?>
-                                <?php the_post_thumbnail('large'); ?>
-                            <?php endif; ?>
-                            <?php if ($tour_type): ?>
-                            <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
-                            <?php endif; ?>
-                        </div>
+                            <div class="sbt-tour-card-image">
+                                <?php if ($atts['selection_mode'] === 'none'): ?>
+                                    <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
+                                        <?php the_post_thumbnail('large'); ?>
+                                    </a>
+                                <?php else: ?>
+                                    <?php the_post_thumbnail('large'); ?>
+                                <?php endif; ?>
+                                <?php if ($tour_type): ?>
+                                    <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
 
                         <div class="sbt-tour-card-content">
@@ -542,66 +550,66 @@ class SBT_Shortcodes {
                             </h3>
 
                             <?php if (get_the_excerpt()): ?>
-                            <p class="sbt-tour-card-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
+                                <p class="sbt-tour-card-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
                             <?php endif; ?>
 
                             <div class="sbt-tour-card-meta-grid">
                                 <?php if ($duration): ?>
-                                <div class="sbt-meta-item">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                                    </svg>
-                                    <span><?php echo esc_html($duration); ?> hours</span>
-                                </div>
+                                    <div class="sbt-meta-item">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                                        </svg>
+                                        <span><?php echo esc_html($duration); ?> hours</span>
+                                    </div>
                                 <?php endif; ?>
 
                                 <?php if ($max_capacity): ?>
-                                <div class="sbt-meta-item">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                        <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
-                                        <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
-                                    </svg>
-                                    <span>Up to <?php echo esc_html($max_capacity); ?></span>
-                                </div>
+                                    <div class="sbt-meta-item">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                            <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
+                                            <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                                        </svg>
+                                        <span>Up to <?php echo esc_html($max_capacity); ?></span>
+                                    </div>
                                 <?php endif; ?>
 
                                 <?php if ($departure_location): ?>
-                                <div class="sbt-meta-item">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-                                    </svg>
-                                    <span><?php echo esc_html($departure_location); ?></span>
-                                </div>
+                                    <div class="sbt-meta-item">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                                        </svg>
+                                        <span><?php echo esc_html($departure_location); ?></span>
+                                    </div>
                                 <?php endif; ?>
                             </div>
 
                             <div class="sbt-tour-card-footer">
                                 <?php if ($price): ?>
-                                <div class="sbt-tour-card-price-block">
-                                    <span class="sbt-price-label">From</span>
-                                    <span class="sbt-price-amount">€<?php echo number_format($price, 0); ?></span>
-                                    <?php if ($price_per_person): ?>
-                                    <span class="sbt-price-per">/person</span>
-                                    <?php endif; ?>
-                                </div>
+                                    <div class="sbt-tour-card-price-block">
+                                        <span class="sbt-price-label">From</span>
+                                        <span class="sbt-price-amount">€<?php echo number_format($price, 0); ?></span>
+                                        <?php if ($price_per_person): ?>
+                                            <span class="sbt-price-per">/person</span>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php endif; ?>
 
                                 <div class="sbt-tour-card-actions">
                                     <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-tour-detail" target="_blank">
                                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
                                         </svg>
                                         Details
                                     </a>
                                     <?php if ($atts['selection_mode'] === 'none'): ?>
-                                    <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-secondary">
-                                        Book Now
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                                        </svg>
-                                    </a>
+                                        <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-secondary">
+                                            Book Now
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
+                                            </svg>
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -610,17 +618,18 @@ class SBT_Shortcodes {
                 <?php endwhile; ?>
             </div>
         </div>
-        <?php
+    <?php
         wp_reset_postdata();
         return ob_get_clean();
-    }   
-    
+    }
+
     /**
      * Single Tour Card Shortcode
      * Usage: [sbt_tour_card id="123"] or [sbt_single_tour]
      * URL Parameters: ?id=123 or ?tour_id=123 or ?tour=morning
      */
-    public function tour_card($atts) {
+    public function tour_card($atts)
+    {
         $atts = shortcode_atts([
             'id' => 0,
             'tour_type' => ''
@@ -677,20 +686,20 @@ class SBT_Shortcodes {
         $gallery = get_field('tour_gallery', $tour_id);
 
         ob_start();
-        ?>
+    ?>
         <div class="sbt-single-tour-detail">
             <!-- Tour Header -->
             <div class="sbt-tour-header">
                 <?php if (has_post_thumbnail($tour_id)): ?>
-                <div class="sbt-tour-hero-image">
-                    <?php echo get_the_post_thumbnail($tour_id, 'full'); ?>
-                    <div class="sbt-tour-hero-overlay">
-                        <h1 class="sbt-tour-hero-title"><?php echo get_the_title($tour_id); ?></h1>
-                        <?php if ($tour_type): ?>
-                        <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
-                        <?php endif; ?>
+                    <div class="sbt-tour-hero-image">
+                        <?php echo get_the_post_thumbnail($tour_id, 'full'); ?>
+                        <div class="sbt-tour-hero-overlay">
+                            <h1 class="sbt-tour-hero-title"><?php echo get_the_title($tour_id); ?></h1>
+                            <?php if ($tour_type): ?>
+                                <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
                 <?php endif; ?>
             </div>
 
@@ -698,42 +707,42 @@ class SBT_Shortcodes {
                 <!-- Quick Info Bar -->
                 <div class="sbt-tour-quick-info">
                     <?php if ($duration): ?>
-                    <div class="sbt-quick-info-item">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                        </svg>
-                        <span><strong>Duration:</strong> <?php echo esc_html($duration); ?> hours</span>
-                    </div>
+                        <div class="sbt-quick-info-item">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                            </svg>
+                            <span><strong>Duration:</strong> <?php echo esc_html($duration); ?> hours</span>
+                        </div>
                     <?php endif; ?>
 
                     <?php if ($max_capacity): ?>
-                    <div class="sbt-quick-info-item">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                            <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
-                            <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
-                        </svg>
-                        <span><strong>Max Group:</strong> <?php echo esc_html($max_capacity); ?> people</span>
-                    </div>
+                        <div class="sbt-quick-info-item">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
+                                <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                            </svg>
+                            <span><strong>Max Group:</strong> <?php echo esc_html($max_capacity); ?> people</span>
+                        </div>
                     <?php endif; ?>
 
                     <?php if ($departure_location): ?>
-                    <div class="sbt-quick-info-item">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-                        </svg>
-                        <span><strong>Departs from:</strong> <?php echo esc_html($departure_location); ?></span>
-                    </div>
+                        <div class="sbt-quick-info-item">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                            </svg>
+                            <span><strong>Departs from:</strong> <?php echo esc_html($departure_location); ?></span>
+                        </div>
                     <?php endif; ?>
 
                     <?php if ($departure_time): ?>
-                    <div class="sbt-quick-info-item">
-                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527z"/>
-                        </svg>
-                        <span><strong>Departure:</strong> <?php echo esc_html($departure_time); ?></span>
-                    </div>
+                        <div class="sbt-quick-info-item">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527z" />
+                            </svg>
+                            <span><strong>Departure:</strong> <?php echo esc_html($departure_time); ?></span>
+                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -743,84 +752,93 @@ class SBT_Shortcodes {
                     <div class="sbt-tour-left-column">
                         <!-- Description -->
                         <?php if ($tour->post_content): ?>
-                        <div class="sbt-tour-section sbt-tour-description">
-                            <h2 class="sbt-section-heading">About This Tour</h2>
-                            <div class="sbt-section-content">
-                                <?php echo wpautop($tour->post_content); ?>
+                            <div class="sbt-tour-section sbt-tour-description">
+                                <h2 class="sbt-section-heading">About This Tour</h2>
+                                <div class="sbt-section-content">
+                                    <?php echo wpautop($tour->post_content); ?>
+                                </div>
                             </div>
-                        </div>
                         <?php endif; ?>
 
                         <!-- Tour Highlights -->
                         <?php if ($highlights && is_array($highlights)): ?>
-                        <div class="sbt-tour-section sbt-tour-highlights">
-                            <h2 class="sbt-section-heading">
-                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                </svg>
-                                Tour Highlights
-                            </h2>
-                            <ul class="sbt-highlights-list">
-                                <?php foreach ($highlights as $highlight): ?>
-                                    <?php if (isset($highlight['highlight_text']) && !empty($highlight['highlight_text'])): ?>
-                                    <li>
-                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                                        </svg>
-                                        <?php echo esc_html($highlight['highlight_text']); ?>
-                                    </li>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                            <div class="sbt-tour-section sbt-tour-highlights">
+                                <h2 class="sbt-section-heading">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                    </svg>
+                                    Tour Highlights
+                                </h2>
+                                <ul class="sbt-highlights-list">
+                                    <?php foreach ($highlights as $highlight): ?>
+                                        <?php if (isset($highlight['highlight_text']) && !empty($highlight['highlight_text'])): ?>
+                                            <li>
+                                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+                                                </svg>
+                                                <?php echo esc_html($highlight['highlight_text']); ?>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         <?php endif; ?>
 
                         <!-- What's Included -->
                         <?php if ($included && is_array($included)): ?>
-                        <div class="sbt-tour-section sbt-tour-included">
-                            <h2 class="sbt-section-heading">
-                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                    <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z"/>
-                                </svg>
-                                What's Included
-                            </h2>
-                            <ul class="sbt-included-list">
-                                <?php foreach ($included as $item): ?>
-                                    <?php if (isset($item['included_item']) && !empty($item['included_item'])): ?>
-                                    <li>
-                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                                        </svg>
-                                        <?php echo esc_html($item['included_item']); ?>
-                                    </li>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                            <div class="sbt-tour-section sbt-tour-included">
+                                <h2 class="sbt-section-heading">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                        <path d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.235.235 0 0 1 .02-.022z" />
+                                    </svg>
+                                    What's Included
+                                </h2>
+                                <ul class="sbt-included-list">
+                                    <?php foreach ($included as $item): ?>
+                                        <?php if (isset($item['included_item']) && !empty($item['included_item'])): ?>
+                                            <li>
+                                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                                                </svg>
+                                                <?php echo esc_html($item['included_item']); ?>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
                         <?php endif; ?>
-
+                        <!-- Availability Calendar -->
+                        <div class="sbt-tour-availability-section">
+                            <h4 class="sbt-availability-title">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                                </svg>
+                                Check Availability
+                            </h4>
+                            <?php echo do_shortcode('[sbt_availability_calendar tour_id="' . $tour_id . '" full_width="true"]'); ?>
+                        </div>
                         <!-- Tour Gallery -->
                         <?php if ($gallery && is_array($gallery) && count($gallery) > 0): ?>
-                        <div class="sbt-tour-section sbt-tour-gallery-section">
-                            <h2 class="sbt-section-heading">
-                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                                    <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
-                                </svg>
-                                Photo Gallery
-                            </h2>
-                            <div class="sbt-tour-gallery">
-                                <?php foreach ($gallery as $image): ?>
-                                    <div class="sbt-gallery-item">
-                                        <img src="<?php echo esc_url($image['sizes']['medium'] ?? $image['url']); ?>"
-                                             alt="<?php echo esc_attr($image['alt'] ?? 'Tour image'); ?>"
-                                             data-full="<?php echo esc_url($image['url']); ?>"
-                                             class="sbt-gallery-image">
-                                    </div>
-                                <?php endforeach; ?>
+                            <div class="sbt-tour-section sbt-tour-gallery-section">
+                                <h2 class="sbt-section-heading">
+                                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                                        <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z" />
+                                    </svg>
+                                    Photo Gallery
+                                </h2>
+                                <div class="sbt-tour-gallery">
+                                    <?php foreach ($gallery as $image): ?>
+                                        <div class="sbt-gallery-item">
+                                            <img src="<?php echo esc_url($image['sizes']['medium'] ?? $image['url']); ?>"
+                                                alt="<?php echo esc_attr($image['alt'] ?? 'Tour image'); ?>"
+                                                data-full="<?php echo esc_url($image['url']); ?>"
+                                                class="sbt-gallery-image">
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
-                        </div>
                         <?php endif; ?>
                     </div>
 
@@ -829,29 +847,18 @@ class SBT_Shortcodes {
                         <div class="sbt-booking-card-sticky">
                             <div class="sbt-booking-card">
                                 <?php if ($price): ?>
-                                <div class="sbt-booking-price">
-                                    <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
-                                    <?php if ($price_per_person): ?>
-                                    <span class="sbt-price-label">per person</span>
-                                    <?php endif; ?>
-                                </div>
+                                    <div class="sbt-booking-price">
+                                        <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
+                                        <?php if ($price_per_person): ?>
+                                            <span class="sbt-price-label">per person</span>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php endif; ?>
-
-                                <!-- Availability Calendar -->
-                                <div class="sbt-tour-availability-section">
-                                    <h4 class="sbt-availability-title">
-                                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                                        </svg>
-                                        Check Availability
-                                    </h4>
-                                    <?php echo do_shortcode('[sbt_availability_calendar tour_id="' . $tour_id . '" full_width="true"]'); ?>
-                                </div>
 
                                 <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">
                                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
-                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                        <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                                     </svg>
                                     Book This Tour
                                 </a>
@@ -859,19 +866,19 @@ class SBT_Shortcodes {
                                 <div class="sbt-booking-card-features">
                                     <div class="sbt-feature-item">
                                         <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                                         </svg>
                                         Instant Confirmation
                                     </div>
                                     <div class="sbt-feature-item">
                                         <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                                         </svg>
                                         Free Cancellation
                                     </div>
                                     <div class="sbt-feature-item">
                                         <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                                         </svg>
                                         Secure Payment
                                     </div>
@@ -893,16 +900,17 @@ class SBT_Shortcodes {
                 <img src="" alt="" class="sbt-lightbox-image">
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
-    
+
     /**
      * Availability Calendar Shortcode
      * Usage: [sbt_availability_calendar]
      * URL Parameters: ?date=2024-01-15&id=123
      */
-    public function availability_calendar($atts) {
+    public function availability_calendar($atts)
+    {
         $atts = shortcode_atts([
             'date' => '',
             'tour_id' => '',
@@ -928,11 +936,11 @@ class SBT_Shortcodes {
         }
 
         ob_start();
-        ?>
+    ?>
         <div class="<?php echo esc_attr($calendar_class); ?>"
-             data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
-             data-tour-id="<?php echo esc_attr($atts['tour_id']); ?>"
-             data-multi-select="<?php echo esc_attr($atts['multi_select']); ?>">
+            data-preselect-date="<?php echo esc_attr($atts['date']); ?>"
+            data-tour-id="<?php echo esc_attr($atts['tour_id']); ?>"
+            data-multi-select="<?php echo esc_attr($atts['multi_select']); ?>">
             <div class="sbt-calendar-header">
                 <button type="button" class="sbt-calendar-nav sbt-calendar-prev">&lt;</button>
                 <h4 class="sbt-calendar-title"></h4>
@@ -951,7 +959,7 @@ class SBT_Shortcodes {
                 </span>
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -960,7 +968,8 @@ class SBT_Shortcodes {
      * Usage: [sbt_booking_confirmation]
      * URL Parameter: ?code=XXXXXXXX
      */
-    public function booking_confirmation($atts) {
+    public function booking_confirmation($atts)
+    {
         $atts = shortcode_atts([
             'code' => ''
         ], $atts);
@@ -1070,20 +1079,20 @@ class SBT_Shortcodes {
         }
 
         ob_start();
-        ?>
+    ?>
         <div class="sbt-booking-confirmation" data-booking-id="<?php echo esc_attr($booking_id); ?>" data-confirmation-code="<?php echo esc_attr($confirmation_code); ?>">
             <!-- Success Header -->
             <div class="sbt-confirmation-header">
                 <div class="sbt-success-icon">
                     <?php if ($status === 'confirmed'): ?>
-                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
+                        <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                        </svg>
                     <?php else: ?>
-                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                    </svg>
+                        <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                        </svg>
                     <?php endif; ?>
                 </div>
                 <h1 class="sbt-confirmation-title">
@@ -1108,15 +1117,15 @@ class SBT_Shortcodes {
             <div class="sbt-confirmation-actions">
                 <button type="button" class="sbt-btn sbt-btn-primary sbt-export-pdf">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
                     </svg>
                     Download PDF
                 </button>
                 <button type="button" class="sbt-btn sbt-btn-secondary sbt-print-confirmation">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z" />
                     </svg>
                     Print
                 </button>
@@ -1128,7 +1137,7 @@ class SBT_Shortcodes {
                 <div class="sbt-confirmation-section">
                     <h2 class="sbt-section-title">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
                         </svg>
                         Tour Details
                     </h2>
@@ -1145,51 +1154,51 @@ class SBT_Shortcodes {
                             $price = get_field('tour_price', $tour_id);
                             $price_per_person = get_field('tour_price_per_person', $tour_id);
                         ?>
-                        <div class="sbt-tour-item">
-                            <?php if (has_post_thumbnail($tour_id)): ?>
-                            <div class="sbt-tour-thumbnail">
-                                <?php echo get_the_post_thumbnail($tour_id, 'medium'); ?>
-                            </div>
-                            <?php endif; ?>
-
-                            <div class="sbt-tour-info">
-                                <h3 class="sbt-tour-name"><?php echo get_the_title($tour_id); ?></h3>
-
-                                <?php if ($tour_type): ?>
-                                <span class="sbt-tour-type-label"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
+                            <div class="sbt-tour-item">
+                                <?php if (has_post_thumbnail($tour_id)): ?>
+                                    <div class="sbt-tour-thumbnail">
+                                        <?php echo get_the_post_thumbnail($tour_id, 'medium'); ?>
+                                    </div>
                                 <?php endif; ?>
 
-                                <div class="sbt-tour-meta-list">
-                                    <?php if ($duration): ?>
-                                    <div class="sbt-meta-row">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                                        </svg>
-                                        <span>Duration: <?php echo esc_html($duration); ?> hours</span>
-                                    </div>
+                                <div class="sbt-tour-info">
+                                    <h3 class="sbt-tour-name"><?php echo get_the_title($tour_id); ?></h3>
+
+                                    <?php if ($tour_type): ?>
+                                        <span class="sbt-tour-type-label"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
                                     <?php endif; ?>
 
-                                    <?php if ($departure_time): ?>
-                                    <div class="sbt-meta-row">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527z"/>
-                                        </svg>
-                                        <span>Departure: <?php echo esc_html($departure_time); ?></span>
-                                    </div>
-                                    <?php endif; ?>
+                                    <div class="sbt-tour-meta-list">
+                                        <?php if ($duration): ?>
+                                            <div class="sbt-meta-row">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                                                </svg>
+                                                <span>Duration: <?php echo esc_html($duration); ?> hours</span>
+                                            </div>
+                                        <?php endif; ?>
 
-                                    <?php if ($departure_location): ?>
-                                    <div class="sbt-meta-row">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-                                        </svg>
-                                        <span>Location: <?php echo esc_html($departure_location); ?></span>
+                                        <?php if ($departure_time): ?>
+                                            <div class="sbt-meta-row">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527z" />
+                                                </svg>
+                                                <span>Departure: <?php echo esc_html($departure_time); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if ($departure_location): ?>
+                                            <div class="sbt-meta-row">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                                                </svg>
+                                                <span>Location: <?php echo esc_html($departure_location); ?></span>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
-                                    <?php endif; ?>
                                 </div>
                             </div>
-                        </div>
                         <?php endforeach; ?>
                     </div>
 
@@ -1197,39 +1206,39 @@ class SBT_Shortcodes {
                     <div class="sbt-detail-group">
                         <h3 class="sbt-detail-title">
                             <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
                             </svg>
                             Booking Date<?php echo count($dates) > 1 ? 's' : ''; ?>
                         </h3>
                         <div class="sbt-dates-list">
                             <?php foreach ($dates as $date): ?>
-                            <div class="sbt-date-item"><?php echo esc_html(date('l, F j, Y', strtotime($date))); ?></div>
+                                <div class="sbt-date-item"><?php echo esc_html(date('l, F j, Y', strtotime($date))); ?></div>
                             <?php endforeach; ?>
                         </div>
                     </div>
 
                     <!-- Destinations Section -->
                     <?php if (!empty($destinations) && is_array($destinations)): ?>
-                    <div class="sbt-detail-group">
-                        <h3 class="sbt-detail-title">
-                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-                            </svg>
-                            Route
-                        </h3>
-                        <div class="sbt-destinations-route">
-                            <?php echo implode(' → ', array_map('esc_html', $destinations)); ?>
+                        <div class="sbt-detail-group">
+                            <h3 class="sbt-detail-title">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                                </svg>
+                                Route
+                            </h3>
+                            <div class="sbt-destinations-route">
+                                <?php echo implode(' → ', array_map('esc_html', $destinations)); ?>
+                            </div>
                         </div>
-                    </div>
                     <?php endif; ?>
 
                     <!-- Passengers -->
                     <div class="sbt-detail-group">
                         <h3 class="sbt-detail-title">
                             <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
-                                <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
+                                <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
                             </svg>
                             Number of Passengers
                         </h3>
@@ -1243,8 +1252,8 @@ class SBT_Shortcodes {
                     <div class="sbt-confirmation-section">
                         <h2 class="sbt-section-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z" />
                             </svg>
                             Booking Summary
                         </h2>
@@ -1261,10 +1270,10 @@ class SBT_Shortcodes {
                             </div>
 
                             <?php if ($payment_method): ?>
-                            <div class="sbt-summary-row">
-                                <span class="sbt-summary-label">Payment Method</span>
-                                <span class="sbt-summary-value"><?php echo esc_html(ucfirst($payment_method)); ?></span>
-                            </div>
+                                <div class="sbt-summary-row">
+                                    <span class="sbt-summary-label">Payment Method</span>
+                                    <span class="sbt-summary-value"><?php echo esc_html(ucfirst($payment_method)); ?></span>
+                                </div>
                             <?php endif; ?>
 
                             <div class="sbt-summary-divider"></div>
@@ -1280,7 +1289,7 @@ class SBT_Shortcodes {
                     <div class="sbt-confirmation-section">
                         <h2 class="sbt-section-title">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
                             </svg>
                             Customer Information
                         </h2>
@@ -1302,17 +1311,17 @@ class SBT_Shortcodes {
                             </div>
 
                             <?php if ($country): ?>
-                            <div class="sbt-info-row">
-                                <span class="sbt-info-label">Country</span>
-                                <span class="sbt-info-value"><?php echo esc_html($country); ?></span>
-                            </div>
+                                <div class="sbt-info-row">
+                                    <span class="sbt-info-label">Country</span>
+                                    <span class="sbt-info-value"><?php echo esc_html($country); ?></span>
+                                </div>
                             <?php endif; ?>
 
                             <?php if ($special_requests): ?>
-                            <div class="sbt-info-row sbt-info-full">
-                                <span class="sbt-info-label">Special Requests</span>
-                                <span class="sbt-info-value"><?php echo esc_html($special_requests); ?></span>
-                            </div>
+                                <div class="sbt-info-row sbt-info-full">
+                                    <span class="sbt-info-label">Special Requests</span>
+                                    <span class="sbt-info-value"><?php echo esc_html($special_requests); ?></span>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -1321,8 +1330,8 @@ class SBT_Shortcodes {
                     <div class="sbt-confirmation-section sbt-important-info">
                         <h3 class="sbt-info-title">
                             <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
                             </svg>
                             Important Information
                         </h3>
@@ -1340,14 +1349,14 @@ class SBT_Shortcodes {
             <div class="sbt-confirmation-footer">
                 <p>
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z" />
                     </svg>
                     A confirmation email has been sent to <strong><?php echo esc_html($email); ?></strong>
                 </p>
                 <p>If you have any questions, please contact us or reply to the confirmation email.</p>
             </div>
         </div>
-        <?php
+<?php
         return ob_get_clean();
     }
 }

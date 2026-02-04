@@ -78,41 +78,41 @@
 
 .sbt-btn-primary {
     background: linear-gradient(135deg, var(--sbt-primary-light) 0%, var(--sbt-primary) 100%);
-    color: var(--sbt-white);
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    color: var(--sbt-white) !important;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
 }
 
 .sbt-btn-primary:hover {
     background: linear-gradient(135deg, var(--sbt-primary) 0%, var(--sbt-primary-dark) 100%);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 16px 32px rgba(30, 58, 138, 0.4);
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 16px 32px rgba(30, 58, 138, 0.4) !important;
 }
 
 .sbt-btn-primary:active {
     transform: translateY(-1px) scale(1);
-    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
-    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3) !important;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .sbt-btn-secondary {
     background: var(--sbt-white);
-    color: var(--sbt-primary);
-    border: 2px solid var(--sbt-primary);
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1);
+    color: var(--sbt-primary) !important;
+    border: 2px solid var(--sbt-primary) !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1) !important;
 }
 
 .sbt-btn-secondary:hover {
     background: var(--sbt-primary);
-    color: var(--sbt-white);
+    color: var(--sbt-white) !important;
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 24px rgba(30, 58, 138, 0.3);
-    border-color: var(--sbt-primary-dark);
+    box-shadow: 0 12px 24px rgba(30, 58, 138, 0.3) !important;
+    border-color: var(--sbt-primary-dark) !important;
 }
 
 .sbt-btn-secondary:active {
     transform: translateY(-1px) scale(1);
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
-    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2) !important;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .sbt-btn-large {
@@ -876,7 +876,6 @@
     border-radius: 0;
     padding: 60px 40px;
     box-shadow: none;
-    max-width: 1200px;
     margin: 0 auto;
     width: 100%;
 }
@@ -1098,11 +1097,10 @@
 }
 
 .sbt-step-content h3 {
-    font-size: 28px;
+    font-size: 28px !important;
     font-weight: 700;
     color: var(--sbt-gray-900);
-    margin-bottom: 30px;
-    text-align: center;
+    margin-bottom: 0;
 }
 
 /* Tour Selection in Booking Widget */
@@ -2601,7 +2599,7 @@
 
 /* Status Badges */
 .sbt-status-badge {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
@@ -2613,8 +2611,12 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     position: relative;
     z-index: 1;
+    width: fit-content;
+    margin: 0 auto;
 }
-
+.sbt-booking-confirmation  h2, .sbt-booking-confirmation h3 {
+    font-size: 26px !important;
+}
 .sbt-status-confirmed {
     background: linear-gradient(135deg, var(--sbt-success), #059669);
     color: var(--sbt-white);
