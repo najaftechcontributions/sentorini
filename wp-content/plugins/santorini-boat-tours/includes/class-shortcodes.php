@@ -122,11 +122,11 @@ class SBT_Shortcodes {
             <!-- Step 1: Select Tour -->
             <div class="sbt-step-content sbt-step-section" data-step="1">
                 <div class="sbt-step-header">
-                    <h3>Select Your Tour(s)</h3>
-                    <p class="sbt-step-description">Choose one or multiple tours for your booking</p>
+                    <h3>Select Your Tour</h3>
+                    <p class="sbt-step-description">Choose one tour for your booking</p>
                 </div>
                 <div class="sbt-step-body">
-                    <?php echo do_shortcode('[sbt_tour_list selection_mode="checkbox"]'); ?>
+                    <?php echo do_shortcode('[sbt_tour_list selection_mode="radio"]'); ?>
                 </div>
                 <div class="sbt-step-footer">
                     <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
@@ -137,10 +137,10 @@ class SBT_Shortcodes {
             <div class="sbt-step-content sbt-step-section" data-step="2" style="display: none;">
                 <div class="sbt-step-header">
                     <h3>Choose Your Date(s)</h3>
-                    <p class="sbt-step-description">Select consecutive dates for your booking (no gaps allowed)</p>
+                    <p class="sbt-step-description">Select one or multiple consecutive dates for your booking</p>
                 </div>
                 <div class="sbt-step-body">
-                    <?php echo do_shortcode('[sbt_availability_calendar multi_select="true"]'); ?>
+                    <?php echo do_shortcode('[sbt_availability_calendar multi_select="consecutive"]'); ?>
                     <div class="sbt-availability-message"></div>
                     <div class="sbt-selected-dates-summary"></div>
                 </div>
@@ -258,14 +258,6 @@ class SBT_Shortcodes {
                                 <span class="sbt-summary-value sbt-summary-total">€0.00</span>
                             </div>
                         </div>
-
-                        <button type="button" class="sbt-btn sbt-btn-secondary sbt-download-summary" style="margin-top: 20px; width: 100%;">
-                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                            </svg>
-                            Download Summary (PDF)
-                        </button>
                     </div>
 
                     <div class="sbt-booking-form-card">
@@ -327,6 +319,7 @@ class SBT_Shortcodes {
                                 <textarea id="sbt-special-requests" name="special_requests" class="sbt-form-textarea" rows="4" placeholder="Let us know if you have any special requests, dietary requirements, or accessibility needs..."></textarea>
                             </div>
 
+                            <?php if (get_option('sbt_require_payment', true)): ?>
                             <div class="sbt-form-group">
                                 <label for="sbt-payment-method" class="sbt-form-label">
                                     Payment Method <span class="sbt-required">*</span>
@@ -365,6 +358,14 @@ class SBT_Shortcodes {
                                 </div>
                                 <span class="sbt-field-error" style="display: none;">Please select a payment method</span>
                             </div>
+                            <?php else: ?>
+                            <input type="hidden" name="payment_method" value="free">
+                            <div class="sbt-info-notice" style="padding: 16px; background: #dbeafe; border-left: 4px solid var(--sbt-primary); border-radius: 8px; margin: 20px 0;">
+                                <p style="margin: 0; color: var(--sbt-gray-700); font-size: 15px;">
+                                    <strong>Free Booking:</strong> No payment required. Your booking will be confirmed after submission.
+                                </p>
+                            </div>
+                            <?php endif; ?>
 
                             <div class="sbt-form-group">
                                 <label class="sbt-checkbox-label">
@@ -387,7 +388,7 @@ class SBT_Shortcodes {
                                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
                                     </svg>
-                                    Complete Booking & Pay
+                                    <?php echo get_option('sbt_require_payment', true) ? 'Complete Booking & Pay' : 'Complete Booking'; ?>
                                 </button>
                             </div>
                         </form>

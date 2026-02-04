@@ -267,7 +267,21 @@ class SBT_Admin_Dashboard {
             null,
             'sbt-settings'
         );
-        
+
+        // Payment requirement setting
+        register_setting('sbt_settings', 'sbt_require_payment');
+        add_settings_field(
+            'sbt_require_payment',
+            'Require Payment',
+            [$this, 'render_checkbox_field'],
+            'sbt-settings',
+            'sbt_general_settings',
+            [
+                'key' => 'sbt_require_payment',
+                'description' => 'If unchecked, bookings will be submitted for free without payment gateway'
+            ]
+        );
+
         $general_fields = [
             'sbt_currency' => 'Currency Code',
             'sbt_currency_symbol' => 'Currency Symbol',
@@ -276,7 +290,7 @@ class SBT_Admin_Dashboard {
             'sbt_from_email' => 'From Email',
             'sbt_from_name' => 'From Name'
         ];
-        
+
         foreach ($general_fields as $key => $label) {
             register_setting('sbt_settings', $key);
             add_settings_field($key, $label, [$this, 'render_text_field'], 'sbt-settings', 'sbt_general_settings', ['key' => $key]);
@@ -354,7 +368,14 @@ class SBT_Admin_Dashboard {
     public function render_checkbox_field($args) {
         $key = $args['key'];
         $value = get_option($key, false);
+        $description = isset($args['description']) ? $args['description'] : '';
+
+        echo '<label>';
         echo '<input type="checkbox" name="' . esc_attr($key) . '" value="1" ' . checked(1, $value, false) . '>';
+        if ($description) {
+            echo '<p class="description">' . esc_html($description) . '</p>';
+        }
+        echo '</label>';
     }
     
     public function export_bookings_csv() {

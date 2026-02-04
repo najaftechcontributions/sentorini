@@ -196,6 +196,7 @@
                 // Handle checkbox (multi-select)
                 if ($input.is(':checked')) {
                     $card.addClass('selected');
+                    if (!SBT.selectedTours) SBT.selectedTours = [];
                     if (!SBT.selectedTours.includes(tourId)) {
                         SBT.selectedTours.push(tourId);
                     }
@@ -209,10 +210,15 @@
                 $card.addClass('selected');
                 SBT.selectedTours = [tourId];
                 SBT.selectedTourId = tourId;
+
+                // Load availability for selected tour
+                if (tourId) {
+                    SBT.loadTourAvailability(tourId);
+                }
             }
 
             // Update step validation
-            const hasSelection = SBT.selectedTours.length > 0;
+            const hasSelection = (SBT.selectedTours && SBT.selectedTours.length > 0) || SBT.selectedTourId;
             $('.sbt-step-content[data-step="1"] .sbt-step-next').prop('disabled', !hasSelection);
         },
         
@@ -382,26 +388,21 @@
         selectDate: function(e) {
             const $day = $(this);
             const $calendar = $day.closest('.sbt-calendar');
-            const isMultiSelect = $calendar.data('multi-select') === 'true';
+            const multiSelectMode = $calendar.data('multi-select');
             const date = $day.data('date');
 
-            if (!isMultiSelect) {
-                // Single date selection
-                $('.sbt-calendar-day').removeClass('selected');
-                $day.addClass('selected');
-                SBT.selectedDate = date;
-                SBT.selectedDates = [date];
-
-                // Check availability for this date
-                if (SBT.selectedTourId && SBT.passengerCount) {
-                    SBT.checkAvailability(SBT.selectedTourId, date, SBT.passengerCount);
+            if (multiSelectMode === 'consecutive' || multiSelectMode === 'true') {
+                // Multi-date selection (consecutive dates)
+                if (!SBT.selectedDates) {
+                    SBT.selectedDates = [];
                 }
-            } else {
-                // Multi-date selection (consecutive dates only)
+
                 if (SBT.selectedDates.length === 0) {
                     // First date
                     SBT.selectedDates = [date];
+                    $('.sbt-calendar-day').removeClass('selected range-start range-end in-range');
                     $day.addClass('selected range-start range-end');
+                    SBT.updateSelectedDatesSummary();
                 } else if (SBT.selectedDates.length === 1) {
                     // Second date - establish range
                     const firstDate = new Date(SBT.selectedDates[0]);
@@ -424,14 +425,25 @@
 
                     // Update calendar display
                     SBT.highlightDateRange(startDate, endDate);
+                    SBT.updateSelectedDatesSummary();
                 } else {
                     // Reset and start new selection
                     SBT.selectedDates = [date];
                     $('.sbt-calendar-day').removeClass('selected range-start range-end in-range');
                     $day.addClass('selected range-start range-end');
+                    SBT.updateSelectedDatesSummary();
                 }
+            } else {
+                // Single date selection
+                $('.sbt-calendar-day').removeClass('selected');
+                $day.addClass('selected');
+                SBT.selectedDate = date;
+                SBT.selectedDates = [date];
 
-                SBT.updateSelectedDatesSummary();
+                // Check availability for this date
+                if (SBT.selectedTourId && SBT.passengerCount) {
+                    SBT.checkAvailability(SBT.selectedTourId, date, SBT.passengerCount);
+                }
             }
         },
 
@@ -696,22 +708,20 @@
         },
 
         toggleStep: function(e) {
+            // Only allow clicking on completed steps
             const $step = $(this);
+            if (!$step.hasClass('completed')) {
+                return;
+            }
+
             const stepNum = $step.data('step');
             const $stepContent = $(`.sbt-step-content[data-step="${stepNum}"]`);
 
-            // Toggle collapsed state
-            if ($stepContent.hasClass('collapsed')) {
-                $('.sbt-step-content').hide().addClass('collapsed');
-                $stepContent.show().removeClass('collapsed');
-
-                // Update active step
+            // Navigate to the clicked step
+            if ($stepContent.length) {
                 const $widget = $('.sbt-booking-widget');
                 $widget.data('currentStep', stepNum);
-
-                // Update step indicators
-                $('.sbt-booking-step').removeClass('active');
-                $step.addClass('active');
+                SBT.showStep(stepNum);
             }
         },
 
