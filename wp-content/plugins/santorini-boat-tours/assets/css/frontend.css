@@ -2447,6 +2447,716 @@
     outline-offset: 2px;
 }
 
+/* =======================
+   BOOKING CONFIRMATION
+   ======================= */
+
+/* Confirmation Container */
+.sbt-booking-confirmation {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Confirmation Header */
+.sbt-confirmation-header {
+    text-align: center;
+    padding: 60px 40px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #fff 100%);
+    border-radius: 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
+    border: 2px solid rgba(59, 130, 246, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sbt-confirmation-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+    animation: pulse-bg 3s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.sbt-success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--sbt-success), #059669);
+    border-radius: 50%;
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+    animation: success-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes success-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+    }
+    60% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.sbt-success-icon svg {
+    color: var(--sbt-white);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.sbt-confirmation-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    background: linear-gradient(135deg, var(--sbt-primary) 0%, var(--sbt-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-confirmation-subtitle {
+    font-size: 18px;
+    color: var(--sbt-gray-600);
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-confirmation-code-display {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 40px;
+    background: var(--sbt-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-code-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sbt-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sbt-code-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--sbt-primary);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.sbt-code-highlight {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--sbt-primary);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Status Badges */
+.sbt-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-status-confirmed {
+    background: linear-gradient(135deg, var(--sbt-success), #059669);
+    color: var(--sbt-white);
+}
+
+.sbt-status-pending {
+    background: linear-gradient(135deg, var(--sbt-accent), #d97706);
+    color: var(--sbt-white);
+}
+
+.sbt-status-cancelled {
+    background: linear-gradient(135deg, var(--sbt-danger), #dc2626);
+    color: var(--sbt-white);
+}
+
+/* Confirmation Actions */
+.sbt-confirmation-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.sbt-export-pdf,
+.sbt-print-confirmation {
+    min-width: 180px;
+}
+
+/* Content Grid */
+.sbt-confirmation-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Confirmation Sections */
+.sbt-confirmation-section {
+    background: var(--sbt-white);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--sbt-gray-100);
+    transition: all 0.3s ease;
+}
+
+.sbt-confirmation-section:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.sbt-section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--sbt-gray-100);
+}
+
+.sbt-section-title svg {
+    color: var(--sbt-primary);
+}
+
+/* Tours List */
+.sbt-tours-list {
+    display: grid;
+    gap: 24px;
+}
+
+.sbt-tour-item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 20px;
+    padding: 20px;
+    background: var(--sbt-gray-50);
+    border-radius: 12px;
+    border: 1px solid var(--sbt-gray-200);
+    transition: all 0.3s ease;
+}
+
+.sbt-tour-item:hover {
+    background: linear-gradient(135deg, #f9fafb 0%, #f0f9ff 100%);
+    border-color: var(--sbt-primary-light);
+    transform: translateX(8px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.sbt-tour-thumbnail {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sbt-tour-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.sbt-tour-item:hover .sbt-tour-thumbnail img {
+    transform: scale(1.1);
+}
+
+.sbt-tour-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sbt-tour-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0;
+}
+
+.sbt-tour-type-label {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary));
+    color: var(--sbt-white);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    max-width: fit-content;
+}
+
+.sbt-tour-meta-list {
+    display: grid;
+    gap: 8px;
+}
+
+.sbt-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--sbt-gray-700);
+}
+
+.sbt-meta-row svg {
+    color: var(--sbt-primary);
+    flex-shrink: 0;
+}
+
+/* Detail Groups */
+.sbt-detail-group {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--sbt-gray-200);
+}
+
+.sbt-detail-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sbt-detail-title svg {
+    color: var(--sbt-primary);
+}
+
+.sbt-detail-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--sbt-gray-900);
+}
+
+/* Dates List */
+.sbt-dates-list {
+    display: grid;
+    gap: 12px;
+}
+
+.sbt-date-item {
+    padding: 14px 16px;
+    background: var(--sbt-white);
+    border-left: 4px solid var(--sbt-primary);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sbt-gray-900);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.sbt-date-item:hover {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    transform: translateX(8px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* Destinations Route */
+.sbt-destinations-route {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sbt-primary);
+    padding: 16px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 8px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar */
+.sbt-confirmation-sidebar {
+    display: grid;
+    gap: 24px;
+    align-content: start;
+}
+
+/* Summary Rows */
+.sbt-summary-rows {
+    display: grid;
+    gap: 16px;
+}
+
+.sbt-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+.sbt-summary-label {
+    font-size: 14px;
+    color: var(--sbt-gray-600);
+    font-weight: 600;
+}
+
+.sbt-summary-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    text-align: right;
+}
+
+.sbt-summary-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--sbt-gray-200) 50%, transparent 100%);
+    margin: 8px 0;
+}
+
+.sbt-summary-total {
+    padding-top: 16px;
+    border-top: 2px solid var(--sbt-primary);
+    margin-top: 8px;
+}
+
+.sbt-summary-total .sbt-summary-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+}
+
+.sbt-summary-total .sbt-summary-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--sbt-primary);
+}
+
+/* Customer Info */
+.sbt-customer-info {
+    display: grid;
+    gap: 16px;
+}
+
+.sbt-info-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+.sbt-info-row.sbt-info-full {
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.sbt-info-label {
+    font-size: 13px;
+    color: var(--sbt-gray-600);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sbt-info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sbt-gray-900);
+}
+
+.sbt-info-full .sbt-info-value {
+    padding: 12px;
+    background: var(--sbt-gray-50);
+    border-radius: 8px;
+    border-left: 3px solid var(--sbt-primary);
+}
+
+/* Important Info */
+.sbt-important-info {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid var(--sbt-accent);
+}
+
+.sbt-info-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sbt-info-title svg {
+    color: var(--sbt-accent);
+}
+
+.sbt-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.sbt-info-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--sbt-gray-700);
+    padding-left: 24px;
+    position: relative;
+}
+
+.sbt-info-list li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: var(--sbt-accent);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+/* Confirmation Footer */
+.sbt-confirmation-footer {
+    text-align: center;
+    padding: 32px;
+    background: var(--sbt-gray-50);
+    border-radius: 12px;
+    margin-top: 40px;
+    border: 1px dashed var(--sbt-gray-300);
+}
+
+.sbt-confirmation-footer p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    color: var(--sbt-gray-700);
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+}
+
+.sbt-confirmation-footer p:last-child {
+    margin: 0;
+}
+
+.sbt-confirmation-footer svg {
+    color: var(--sbt-primary);
+    flex-shrink: 0;
+}
+
+.sbt-confirmation-footer strong {
+    color: var(--sbt-primary);
+    font-weight: 700;
+}
+
+/* Error States */
+.sbt-confirmation-error {
+    max-width: 600px;
+    margin: 60px auto;
+    text-align: center;
+    padding: 60px 40px;
+    background: var(--sbt-white);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sbt-error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--sbt-danger), #dc2626);
+    border-radius: 50%;
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.3);
+}
+
+.sbt-error-icon svg {
+    color: var(--sbt-white);
+}
+
+.sbt-confirmation-error h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+}
+
+.sbt-confirmation-error p {
+    font-size: 16px;
+    color: var(--sbt-gray-600);
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+}
+
+.sbt-confirmation-error p:last-child {
+    margin: 0;
+}
+
+/* Print Styles for Confirmation */
+@media print {
+    .sbt-confirmation-actions,
+    .sbt-export-pdf,
+    .sbt-print-confirmation {
+        display: none !important;
+    }
+
+    .sbt-booking-confirmation {
+        padding: 20px;
+    }
+
+    .sbt-confirmation-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sbt-confirmation-section {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--sbt-gray-300);
+    }
+}
+
+/* Responsive Confirmation */
+@media (max-width: 1024px) {
+    .sbt-confirmation-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sbt-confirmation-header {
+        padding: 40px 24px;
+    }
+
+    .sbt-confirmation-title {
+        font-size: 32px;
+    }
+
+    .sbt-code-value {
+        font-size: 24px;
+    }
+
+    .sbt-confirmation-section {
+        padding: 24px;
+    }
+
+    .sbt-tour-item {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .sbt-tour-thumbnail {
+        width: 100%;
+        height: 200px;
+    }
+
+    .sbt-info-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .sbt-summary-total .sbt-summary-value {
+        font-size: 24px;
+    }
+
+    .sbt-confirmation-actions {
+        flex-direction: column;
+    }
+
+    .sbt-export-pdf,
+    .sbt-print-confirmation {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .sbt-confirmation-title {
+        font-size: 24px;
+    }
+
+    .sbt-confirmation-subtitle {
+        font-size: 16px;
+    }
+
+    .sbt-code-value {
+        font-size: 20px;
+    }
+
+    .sbt-confirmation-header {
+        padding: 30px 20px;
+    }
+
+    .sbt-confirmation-section {
+        padding: 20px;
+    }
+}
+
 /* Print Styles */
 @media print {
     .sbt-booking-widget,
