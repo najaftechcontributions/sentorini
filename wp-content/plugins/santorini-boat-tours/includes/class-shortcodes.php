@@ -133,8 +133,23 @@ class SBT_Shortcodes
                     <h3>Select Your Tour</h3>
                     <p class="sbt-step-description">Choose one tour for your booking</p>
                 </div>
+
+
+
                 <div class="sbt-step-body">
-                    <?php echo do_shortcode('[sbt_tour_list selection_mode="radio"]'); ?>
+                    <!-- Search Bar for Booking -->
+                    <div class="sbt-search-input-wrapper">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                        </svg>
+                        <input type="text" class="sbt-booking-search-input" placeholder="Search tours by name or type..." style="padding-left: 45px;">
+                        <button type="button" class="sbt-search-clear" style="display: none;">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <?php echo do_shortcode('[sbt_tour_list selection_mode="radio" show_filters="false"]'); ?>
                 </div>
                 <div class="sbt-step-footer">
                     <button type="button" class="sbt-btn sbt-btn-primary sbt-step-next">Next</button>
@@ -450,176 +465,273 @@ class SBT_Shortcodes
 
         $tours = new WP_Query($args);
 
-        if (!$tours->have_posts()) {
-            return '<div class="sbt-no-tours"><p>No tours available at the moment. Please check back later!</p></div>';
-        }
+        // Get all unique values for filters
+        $filter_data = [
+            'types' => [],
+            'durations' => [],
+            'departure_locations' => [],
+            'max_capacity' => 0
+        ];
 
-        // Get all tour types for filter
-        $tour_types = [];
-        if ($atts['show_filters'] === 'true') {
-            $all_tours = get_posts([
-                'post_type' => 'sbt_tour',
-                'posts_per_page' => -1,
-                'post_status' => 'publish'
-            ]);
-            foreach ($all_tours as $tour) {
-                $type = get_field('tour_type', $tour->ID);
-                if ($type && !isset($tour_types[$type])) {
-                    $tour_types[$type] = ucwords(str_replace('_', ' ', $type));
-                }
+        $all_tours = get_posts([
+            'post_type' => 'sbt_tour',
+            'posts_per_page' => -1,
+            'post_status' => 'publish'
+        ]);
+
+        foreach ($all_tours as $tour) {
+            $type = get_field('tour_type', $tour->ID);
+            $duration = get_field('tour_duration', $tour->ID);
+            $departure_location = get_field('tour_departure_location', $tour->ID);
+            $capacity = get_field('tour_max_capacity', $tour->ID);
+
+            if ($type && !isset($filter_data['types'][$type])) {
+                $filter_data['types'][$type] = ucwords(str_replace('_', ' ', $type));
+            }
+
+            if ($duration && !in_array($duration, $filter_data['durations'])) {
+                $filter_data['durations'][] = $duration;
+            }
+
+            if ($departure_location && !in_array($departure_location, $filter_data['departure_locations'])) {
+                $filter_data['departure_locations'][] = $departure_location;
+            }
+
+            if ($capacity > $filter_data['max_capacity']) {
+                $filter_data['max_capacity'] = $capacity;
             }
         }
 
+        // Sort durations and locations
+        sort($filter_data['durations']);
+        sort($filter_data['departure_locations']);
+
         ob_start();
     ?>
-        <div class="sbt-tour-archive">
-            <?php if (!empty($tour_types) && $atts['show_filters'] === 'true'): ?>
+        <div class="sbt-tour-archive <?php echo $atts['show_filters'] === 'true' ? 'sbt-has-sidebar-filters' : ''; ?>">
+            <?php if ($atts['show_filters'] === 'true'): ?>
+                <!-- Left Sidebar Filters -->
+                <aside class="sbt-filters-sidebar">
+                    <div class="sbt-filters-header">
+                        <h3 class="sbt-filters-title">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+                            </svg>
+                            Filters
+                        </h3>
+                        <button type="button" class="sbt-clear-filters" style="display: none;">Clear All</button>
+                    </div>
+
+                    <!-- Search Filter -->
+                    <div class="sbt-filter-section">
+                        <label class="sbt-filter-section-title">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                            </svg>
+                            Search Tours
+                        </label>
+                        <input type="text" class="sbt-filter-search" placeholder="Search by name or description..." />
+                    </div>
+
+                    <!-- Tour Type Filter -->
+                    <?php if (!empty($filter_data['types'])): ?>
+                        <div class="sbt-filter-section">
+                            <h4 class="sbt-filter-section-title">Tour Type</h4>
+                            <div class="sbt-filter-options">
+                                <?php foreach ($filter_data['types'] as $type_value => $type_label): ?>
+                                    <label class="sbt-filter-checkbox">
+                                        <input type="checkbox" name="tour_type[]" value="<?php echo esc_attr($type_value); ?>" <?php checked($atts['type'], $type_value); ?>>
+                                        <span><?php echo esc_html($type_label); ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Duration Filter -->
+                    <?php if (!empty($filter_data['durations'])): ?>
+                        <div class="sbt-filter-section">
+                            <h4 class="sbt-filter-section-title">Duration (hours)</h4>
+                            <div class="sbt-filter-options">
+                                <?php foreach ($filter_data['durations'] as $duration): ?>
+                                    <label class="sbt-filter-checkbox">
+                                        <input type="checkbox" name="duration[]" value="<?php echo esc_attr($duration); ?>">
+                                        <span><?php echo esc_html($duration); ?> hours</span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Passengers Filter -->
+                    <?php if ($filter_data['max_capacity'] > 0): ?>
+                        <div class="sbt-filter-section">
+                            <h4 class="sbt-filter-section-title">Minimum Capacity</h4>
+                            <div class="sbt-filter-range">
+                                <input type="range" class="sbt-filter-slider" name="min_passengers" min="1" max="<?php echo esc_attr($filter_data['max_capacity']); ?>" value="1" step="1">
+                                <div class="sbt-filter-range-value">
+                                    <span class="sbt-range-current">1</span>
+                                    <span class="sbt-range-separator">-</span>
+                                    <span class="sbt-range-max"><?php echo esc_html($filter_data['max_capacity']); ?></span>
+                                    passengers
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Departure Location Filter -->
+                    <?php if (!empty($filter_data['departure_locations'])): ?>
+                        <div class="sbt-filter-section">
+                            <h4 class="sbt-filter-section-title">Departure Location</h4>
+                            <div class="sbt-filter-options">
+                                <?php foreach ($filter_data['departure_locations'] as $location): ?>
+                                    <label class="sbt-filter-checkbox">
+                                        <input type="checkbox" name="departure_location[]" value="<?php echo esc_attr($location); ?>">
+                                        <span><?php echo esc_html($location); ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </aside>
+            <?php endif; ?>
+
+            <!-- Main Content Area -->
+            <div class="sbt-tours-main-content">
                 <div class="sbt-tour-archive-header">
                     <div class="sbt-tour-count">
                         <span class="sbt-count-number"><?php echo $tours->found_posts; ?></span>
                         <span class="sbt-count-label">tour<?php echo $tours->found_posts !== 1 ? 's' : ''; ?> available</span>
                     </div>
-
-                    <div class="sbt-tour-filters">
-                        <div class="sbt-filter-group">
-                            <label for="sbt-tour-filter" class="sbt-filter-label">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
-                                </svg>
-                                Filter by:
-                            </label>
-                            <select id="sbt-tour-filter" class="sbt-tour-type-filter">
-                                <option value="">All Tours</option>
-                                <?php foreach ($tour_types as $type_value => $type_label): ?>
-                                    <option value="<?php echo esc_attr($type_value); ?>" <?php selected($atts['type'], $type_value); ?>>
-                                        <?php echo esc_html($type_label); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
                 </div>
-            <?php endif; ?>
 
-            <div class="sbt-tours-grid sbt-tours-columns-<?php echo esc_attr($atts['columns']); ?> sbt-view-<?php echo esc_attr($atts['view_mode']); ?> <?php echo $atts['selection_mode'] !== 'none' ? 'sbt-tour-selection' : ''; ?>">
-                <?php while ($tours->have_posts()): $tours->the_post();
-                    $tour_id = get_the_ID();
-                    $tour_type = get_field('tour_type', $tour_id);
-                    $duration = get_field('tour_duration', $tour_id);
-                    $max_capacity = get_field('tour_max_capacity', $tour_id);
-                    $price = get_field('tour_price', $tour_id);
-                    $price_per_person = get_field('tour_price_per_person', $tour_id);
-                    $departure_location = get_field('tour_departure_location', $tour_id);
+                <?php if (!$tours->have_posts()): ?>
+                    <div class="sbt-no-tours">
+                        <p>No tours match your filters. Please adjust your search criteria.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="sbt-tours-grid sbt-tours-columns-<?php echo esc_attr($atts['columns']); ?> sbt-view-<?php echo esc_attr($atts['view_mode']); ?> <?php echo $atts['selection_mode'] !== 'none' ? 'sbt-tour-selection' : ''; ?>">
+                        <?php while ($tours->have_posts()): $tours->the_post();
+                            $tour_id = get_the_ID();
+                            $tour_type = get_field('tour_type', $tour_id);
+                            $duration = get_field('tour_duration', $tour_id);
+                            $max_capacity = get_field('tour_max_capacity', $tour_id);
+                            $price = get_field('tour_price', $tour_id);
+                            $price_per_person = get_field('tour_price_per_person', $tour_id);
+                            $departure_location = get_field('tour_departure_location', $tour_id);
 
-                    $card_classes = 'sbt-tour-card-archive';
-                    if ($atts['selection_mode'] !== 'none') {
-                        $card_classes .= ' sbt-tour-option';
-                    }
-                ?>
-                    <article class="<?php echo $card_classes; ?>" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>" data-tour-price="<?php echo esc_attr($price); ?>" data-price-per-person="<?php echo $price_per_person ? 'true' : 'false'; ?>">
-                        <?php if ($atts['selection_mode'] === 'checkbox'): ?>
-                            <div class="sbt-tour-checkbox-wrapper">
-                                <input type="checkbox" name="selected_tours[]" value="<?php echo $tour_id; ?>" class="sbt-tour-checkbox" id="tour-<?php echo $tour_id; ?>" />
-                                <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-checkbox-label"></label>
-                            </div>
-                        <?php elseif ($atts['selection_mode'] === 'radio'): ?>
-                            <div class="sbt-tour-radio-wrapper">
-                                <input type="radio" name="selected_tour" value="<?php echo $tour_id; ?>" class="sbt-tour-radio" id="tour-<?php echo $tour_id; ?>" />
-                                <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-radio-label"></label>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (has_post_thumbnail()): ?>
-                            <div class="sbt-tour-card-image">
-                                <?php if ($atts['selection_mode'] === 'none'): ?>
-                                    <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
-                                        <?php the_post_thumbnail('large'); ?>
-                                    </a>
-                                <?php else: ?>
-                                    <?php the_post_thumbnail('large'); ?>
-                                <?php endif; ?>
-                                <?php if ($tour_type): ?>
-                                    <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="sbt-tour-card-content">
-                            <h3 class="sbt-tour-card-title">
-                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" target="_blank"><?php the_title(); ?></a>
-                            </h3>
-
-                            <?php if (get_the_excerpt()): ?>
-                                <p class="sbt-tour-card-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
-                            <?php endif; ?>
-
-                            <div class="sbt-tour-card-meta-grid">
-                                <?php if ($duration): ?>
-                                    <div class="sbt-meta-item">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
-                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
-                                        </svg>
-                                        <span><?php echo esc_html($duration); ?> hours</span>
+                            $card_classes = 'sbt-tour-card-archive';
+                            if ($atts['selection_mode'] !== 'none') {
+                                $card_classes .= ' sbt-tour-option';
+                            }
+                        ?>
+                            <article class="<?php echo $card_classes; ?>" data-tour-id="<?php echo $tour_id; ?>" data-tour-type="<?php echo esc_attr($tour_type); ?>" data-tour-price="<?php echo esc_attr($price); ?>" data-price-per-person="<?php echo $price_per_person ? 'true' : 'false'; ?>">
+                                <?php if ($atts['selection_mode'] === 'checkbox'): ?>
+                                    <div class="sbt-tour-checkbox-wrapper">
+                                        <input type="checkbox" name="selected_tours[]" value="<?php echo $tour_id; ?>" class="sbt-tour-checkbox" id="tour-<?php echo $tour_id; ?>" />
+                                        <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-checkbox-label"></label>
+                                    </div>
+                                <?php elseif ($atts['selection_mode'] === 'radio'): ?>
+                                    <div class="sbt-tour-radio-wrapper">
+                                        <input type="radio" name="selected_tour" value="<?php echo $tour_id; ?>" class="sbt-tour-radio" id="tour-<?php echo $tour_id; ?>" />
+                                        <label for="tour-<?php echo $tour_id; ?>" class="sbt-tour-radio-label"></label>
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if ($max_capacity): ?>
-                                    <div class="sbt-meta-item">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                                            <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
-                                            <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
-                                        </svg>
-                                        <span>Up to <?php echo esc_html($max_capacity); ?></span>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($departure_location): ?>
-                                    <div class="sbt-meta-item">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
-                                        </svg>
-                                        <span><?php echo esc_html($departure_location); ?></span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="sbt-tour-card-footer">
-                                <?php if ($price): ?>
-                                    <div class="sbt-tour-card-price-block">
-                                        <span class="sbt-price-label">From</span>
-                                        <span class="sbt-price-amount">€<?php echo number_format($price, 0); ?></span>
-                                        <?php if ($price_per_person): ?>
-                                            <span class="sbt-price-per">/day/person</span>
+                                <?php if (has_post_thumbnail()): ?>
+                                    <div class="sbt-tour-card-image">
+                                        <?php if ($atts['selection_mode'] === 'none'): ?>
+                                            <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>">
+                                                <?php the_post_thumbnail('large'); ?>
+                                            </a>
                                         <?php else: ?>
-                                            <span class="sbt-price-per">/day</span>
+                                            <?php the_post_thumbnail('large'); ?>
+                                        <?php endif; ?>
+                                        <?php if ($tour_type): ?>
+                                            <span class="sbt-tour-type-badge"><?php echo esc_html(ucwords(str_replace('_', ' ', $tour_type))); ?></span>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
 
-                                <div class="sbt-tour-card-actions">
-                                    <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-tour-detail" target="_blank">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
-                                        </svg>
-                                        Details
-                                    </a>
-                                    <?php if ($atts['selection_mode'] === 'none'): ?>
-                                        <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-secondary">
-                                            Book Now
-                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
-                                            </svg>
-                                        </a>
+                                <div class="sbt-tour-card-content">
+                                    <h3 class="sbt-tour-card-title">
+                                        <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" target="_blank"><?php the_title(); ?></a>
+                                    </h3>
+
+                                    <?php if (get_the_excerpt()): ?>
+                                        <p class="sbt-tour-card-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20); ?></p>
                                     <?php endif; ?>
+
+                                    <div class="sbt-tour-card-meta-grid">
+                                        <?php if ($duration): ?>
+                                            <div class="sbt-meta-item">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                                                </svg>
+                                                <span><?php echo esc_html($duration); ?> hours</span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if ($max_capacity): ?>
+                                            <div class="sbt-meta-item">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                                    <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z" />
+                                                    <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                                                </svg>
+                                                <span>Up to <?php echo esc_html($max_capacity); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if ($departure_location): ?>
+                                            <div class="sbt-meta-item">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                                                </svg>
+                                                <span><?php echo esc_html($departure_location); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="sbt-tour-card-footer">
+                                        <?php if ($price): ?>
+                                            <div class="sbt-tour-card-price-block">
+                                                <span class="sbt-price-label">From</span>
+                                                <span class="sbt-price-amount">€<?php echo number_format($price, 0); ?></span>
+                                                <?php if ($price_per_person): ?>
+                                                    <span class="sbt-price-per">/day/person</span>
+                                                <?php else: ?>
+                                                    <span class="sbt-price-per">/day</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <div class="sbt-tour-card-actions">
+                                            <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-tour-detail" target="_blank">
+                                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
+                                                </svg>
+                                                Details
+                                            </a>
+                                            <?php if ($atts['selection_mode'] === 'none'): ?>
+                                                <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-secondary">
+                                                    Book Now
+                                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
+                                                    </svg>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </article>
-                <?php endwhile; ?>
-            </div>
-        </div>
+                            </article>
+                        <?php endwhile; ?>
+                    </div>
+                <?php endif; ?>
+            </div><!-- .sbt-tours-main-content -->
+
+        </div><!-- .sbt-tour-archive -->
     <?php
         wp_reset_postdata();
         return ob_get_clean();
@@ -849,14 +961,14 @@ class SBT_Shortcodes
                         <div class="sbt-booking-card-sticky">
                             <div class="sbt-booking-card">
                                 <?php if ($price): ?>
-                            <div class="sbt-booking-price">
-                    <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
-                    <?php if ($price_per_person): ?>
-                        <span class="sbt-price-label">per day per passenger</span>
-                    <?php else: ?>
-                        <span class="sbt-price-label">per day (total)</span>
-                    <?php endif; ?>
-                </div>
+                                    <div class="sbt-booking-price">
+                                        <span class="sbt-price-amount">€<?php echo number_format($price, 2); ?></span>
+                                        <?php if ($price_per_person): ?>
+                                            <span class="sbt-price-label">per day per passenger</span>
+                                        <?php else: ?>
+                                            <span class="sbt-price-label">per day (total)</span>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php endif; ?>
 
                                 <a href="<?php echo esc_url(home_url('/book/?id=' . $tour_id)); ?>" class="sbt-btn sbt-btn-primary sbt-btn-large sbt-book-now-btn" data-tour-id="<?php echo esc_attr($tour_id); ?>">

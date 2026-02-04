@@ -13,6 +13,7 @@
             this.initURLFilters();
             this.initGalleryLightbox();
             this.initFormValidation();
+            this.initFilters();
         },
 
         bindEvents: function() {
@@ -36,6 +37,12 @@
             $(document).on('click', '.sbt-lightbox-prev', this.prevImage);
             $(document).on('click', '.sbt-lightbox-next', this.nextImage);
             $(document).on('keydown', this.handleKeyboard);
+            $(document).on('change', '.sbt-filter-checkbox input[type="checkbox"]', this.applyFilters);
+            $(document).on('input', '.sbt-filter-search, .sbt-booking-search-input', this.handleSearchInput);
+            $(document).on('input', '.sbt-filter-slider', this.updateRangeValue);
+            $(document).on('change', '.sbt-filter-slider', this.applyFilters);
+            $(document).on('click', '.sbt-clear-filters', this.clearFilters);
+            $(document).on('click', '.sbt-search-clear', this.clearSearch);
         },
 
         initGalleryLightbox: function() {
@@ -1561,6 +1568,251 @@
             setTimeout(function() {
                 $('.sbt-confirmation-actions').show();
             }, 100);
+        },
+
+        // =======================
+        // FILTER FUNCTIONALITY
+        // =======================
+
+        initFilters: function() {
+            // Initialize filter state
+            SBT.filters = {
+                search: '',
+                types: [],
+                durations: [],
+                minPassengers: 1,
+                locations: []
+            };
+
+            // Initialize range slider
+            $('.sbt-filter-slider').each(function() {
+                const $slider = $(this);
+                const currentValue = $slider.val();
+                $slider.closest('.sbt-filter-section').find('.sbt-range-current').text(currentValue);
+            });
+        },
+
+        handleSearchInput: function() {
+            const $input = $(this);
+            const searchValue = $input.val().trim().toLowerCase();
+
+            // Show/hide clear button
+            const $clearBtn = $input.siblings('.sbt-search-clear');
+            if (searchValue) {
+                $clearBtn.show();
+            } else {
+                $clearBtn.hide();
+            }
+
+            // Debounce search
+            clearTimeout(SBT.searchTimeout);
+            SBT.searchTimeout = setTimeout(function() {
+                if ($input.hasClass('sbt-filter-search')) {
+                    SBT.filters.search = searchValue;
+                    SBT.applyFilters();
+                } else if ($input.hasClass('sbt-booking-search-input')) {
+                    SBT.filterBookingTours(searchValue);
+                }
+            }, 300);
+        },
+
+        updateRangeValue: function() {
+            const $slider = $(this);
+            const value = $slider.val();
+            $slider.closest('.sbt-filter-section').find('.sbt-range-current').text(value);
+        },
+
+        applyFilters: function() {
+            // Collect filter values
+            SBT.filters.types = [];
+            $('.sbt-filter-checkbox input[name="tour_type[]"]:checked').each(function() {
+                SBT.filters.types.push($(this).val());
+            });
+
+            SBT.filters.durations = [];
+            $('.sbt-filter-checkbox input[name="duration[]"]:checked').each(function() {
+                SBT.filters.durations.push(parseInt($(this).val()));
+            });
+
+            SBT.filters.locations = [];
+            $('.sbt-filter-checkbox input[name="departure_location[]"]:checked').each(function() {
+                SBT.filters.locations.push($(this).val());
+            });
+
+            SBT.filters.minPassengers = parseInt($('.sbt-filter-slider[name="min_passengers"]').val()) || 1;
+
+            // Show/hide clear button
+            const hasActiveFilters = SBT.filters.search || SBT.filters.types.length > 0 ||
+                                    SBT.filters.durations.length > 0 || SBT.filters.locations.length > 0 ||
+                                    SBT.filters.minPassengers > 1;
+
+            if (hasActiveFilters) {
+                $('.sbt-clear-filters').show();
+            } else {
+                $('.sbt-clear-filters').hide();
+            }
+
+            // Filter tours
+            let visibleCount = 0;
+
+            $('.sbt-tour-card-archive').each(function() {
+                const $card = $(this);
+                let isVisible = true;
+
+                // Search filter
+                if (SBT.filters.search) {
+                    const title = $card.find('.sbt-tour-card-title').text().toLowerCase();
+                    const excerpt = $card.find('.sbt-tour-card-excerpt').text().toLowerCase();
+                    const searchMatch = title.includes(SBT.filters.search) || excerpt.includes(SBT.filters.search);
+
+                    if (!searchMatch) {
+                        isVisible = false;
+                    }
+                }
+
+                // Type filter
+                if (isVisible && SBT.filters.types.length > 0) {
+                    const tourType = $card.data('tour-type');
+                    if (!SBT.filters.types.includes(tourType)) {
+                        isVisible = false;
+                    }
+                }
+
+                // Duration filter
+                if (isVisible && SBT.filters.durations.length > 0) {
+                    const durationText = $card.find('.sbt-meta-item:contains("hours")').text();
+                    const durationMatch = durationText.match(/(\d+)\s*hours/);
+                    if (durationMatch) {
+                        const duration = parseInt(durationMatch[1]);
+                        if (!SBT.filters.durations.includes(duration)) {
+                            isVisible = false;
+                        }
+                    } else {
+                        isVisible = false;
+                    }
+                }
+
+                // Passengers/Capacity filter
+                if (isVisible && SBT.filters.minPassengers > 1) {
+                    const capacityText = $card.find('.sbt-meta-item:contains("Up to")').text();
+                    const capacityMatch = capacityText.match(/Up to (\d+)/);
+                    if (capacityMatch) {
+                        const capacity = parseInt(capacityMatch[1]);
+                        if (capacity < SBT.filters.minPassengers) {
+                            isVisible = false;
+                        }
+                    }
+                }
+
+                // Departure location filter
+                if (isVisible && SBT.filters.locations.length > 0) {
+                    const locationText = $card.find('.sbt-meta-item svg + span').filter(function() {
+                        return $(this).parent().find('svg path[d*="M8 16s6-5.686"]').length > 0;
+                    }).text();
+
+                    if (!SBT.filters.locations.some(loc => locationText.includes(loc))) {
+                        isVisible = false;
+                    }
+                }
+
+                // Show/hide card
+                if (isVisible) {
+                    $card.removeClass('sbt-filtered-hidden').fadeIn(300);
+                    visibleCount++;
+                } else {
+                    $card.addClass('sbt-filtered-hidden').fadeOut(300);
+                }
+            });
+
+            // Update count
+            $('.sbt-count-number').text(visibleCount);
+            $('.sbt-count-label').text(visibleCount !== 1 ? 'tours available' : 'tour available');
+
+            // Show no results message if needed
+            if (visibleCount === 0 && $('.sbt-no-tours-filtered').length === 0) {
+                const noResultsHtml = '<div class="sbt-no-tours sbt-no-tours-filtered"><p>No tours match your filters. Please adjust your search criteria.</p></div>';
+                $('.sbt-tours-grid').after(noResultsHtml);
+            } else if (visibleCount > 0) {
+                $('.sbt-no-tours-filtered').remove();
+            }
+        },
+
+        filterBookingTours: function(searchValue) {
+            let visibleCount = 0;
+
+            $('.sbt-tour-card-archive.sbt-tour-option').each(function() {
+                const $card = $(this);
+                const title = $card.find('.sbt-tour-card-title, .sbt-tour-name').text().toLowerCase();
+                const tourType = ($card.find('.sbt-tour-type-badge, .sbt-tour-type-label').text() || '').toLowerCase();
+                const excerpt = ($card.find('.sbt-tour-card-excerpt, .sbt-tour-excerpt').text() || '').toLowerCase();
+
+                const matchesSearch = !searchValue ||
+                                    title.includes(searchValue) ||
+                                    tourType.includes(searchValue) ||
+                                    excerpt.includes(searchValue);
+
+                if (matchesSearch) {
+                    $card.removeClass('sbt-filtered-hidden').fadeIn(200);
+                    visibleCount++;
+                } else {
+                    $card.addClass('sbt-filtered-hidden').fadeOut(200);
+                }
+            });
+
+            // Show message if no results
+            if (visibleCount === 0 && searchValue) {
+                if ($('.sbt-booking-no-results').length === 0) {
+                    const noResultsHtml = '<div class="sbt-no-tours sbt-booking-no-results" style="margin: 20px 0;"><p>No tours found matching "' + searchValue + '"</p></div>';
+                    $('.sbt-tours-grid').before(noResultsHtml);
+                }
+            } else {
+                $('.sbt-booking-no-results').remove();
+            }
+        },
+
+        clearFilters: function(e) {
+            e.preventDefault();
+
+            // Reset all checkboxes
+            $('.sbt-filter-checkbox input[type="checkbox"]').prop('checked', false);
+
+            // Reset range slider
+            $('.sbt-filter-slider').val(1).trigger('input');
+
+            // Reset search
+            $('.sbt-filter-search').val('').trigger('input');
+
+            // Reset filter state
+            SBT.filters = {
+                search: '',
+                types: [],
+                durations: [],
+                minPassengers: 1,
+                locations: []
+            };
+
+            // Show all tours
+            $('.sbt-tour-card-archive').removeClass('sbt-filtered-hidden').fadeIn(300);
+
+            // Update count
+            const totalCount = $('.sbt-tour-card-archive').length;
+            $('.sbt-count-number').text(totalCount);
+            $('.sbt-count-label').text(totalCount !== 1 ? 'tours available' : 'tour available');
+
+            // Hide no results message
+            $('.sbt-no-tours-filtered').remove();
+
+            // Hide clear button
+            $('.sbt-clear-filters').hide();
+        },
+
+        clearSearch: function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const $input = $btn.siblings('input');
+
+            $input.val('').trigger('input').focus();
+            $btn.hide();
         }
     };
     

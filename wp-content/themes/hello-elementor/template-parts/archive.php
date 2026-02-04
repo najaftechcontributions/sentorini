@@ -14,6 +14,18 @@ if (! defined('ABSPATH')) {
 	.sbt-tour-card-footer {
 		flex-direction: column !important;
 	}
+
+	@media (min-width: 1200px) {
+
+		.page-header .entry-title,
+		.site-footer .footer-inner,
+		.site-footer:not(.dynamic-footer),
+		.site-header .header-inner,
+		.site-header:not(.dynamic-header),
+		body:not([class*=elementor-page-]) .site-main {
+			max-width: 1440px;
+		}
+	}
 </style>
 <main id="content" class="site-main">
 	<div class="sbt-step-header">

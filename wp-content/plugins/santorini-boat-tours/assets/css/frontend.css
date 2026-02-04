@@ -3171,3 +3171,359 @@
         display: none;
     }
 }
+
+/* =======================
+   FILTER SIDEBAR
+   ======================= */
+
+/* Tour Archive with Sidebar Layout */
+.sbt-tour-archive.sbt-has-sidebar-filters {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Filter Sidebar */
+.sbt-filters-sidebar {
+    background: var(--sbt-white);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--sbt-gray-100);
+    position: sticky;
+    top: 20px;
+}
+
+.sbt-filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--sbt-gray-100);
+}
+
+.sbt-filters-title {
+    font-size: 22px !important;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sbt-filters-title svg {
+    color: var(--sbt-primary);
+}
+
+.sbt-clear-filters {
+    padding: 6px 14px;
+    background: var(--sbt-gray-100);
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sbt-gray-700);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sbt-clear-filters:hover {
+    background: var(--sbt-danger);
+    color: var(--sbt-white);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Filter Sections */
+.sbt-filter-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--sbt-gray-100);
+}
+
+.sbt-filter-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.sbt-filter-section-title {
+    font-size: 15px !important;
+    font-weight: 700;
+    color: var(--sbt-gray-900);
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sbt-filter-section-title svg {
+    color: var(--sbt-primary);
+    flex-shrink: 0;
+}
+
+/* Search Filter */
+.sbt-filter-search {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sbt-filter-search:focus {
+    outline: none;
+    border-color: var(--sbt-primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbff 100%);
+}
+
+.sbt-filter-search::placeholder {
+    color: var(--sbt-gray-400);
+}
+
+/* Filter Options - Checkboxes */
+.sbt-filter-options {
+    display: grid;
+    gap: 10px;
+}
+
+.sbt-filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--sbt-gray-50);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.sbt-filter-checkbox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sbt-filter-checkbox:hover {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-color: var(--sbt-primary-light);
+    transform: translateX(6px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.sbt-filter-checkbox:hover::before {
+    opacity: 1;
+}
+
+.sbt-filter-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--sbt-primary);
+    flex-shrink: 0;
+}
+
+.sbt-filter-checkbox span {
+    font-size: 14px;
+    color: var(--sbt-gray-700);
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.sbt-filter-checkbox input[type="checkbox"]:checked + span {
+    font-weight: 700;
+    color: var(--sbt-primary);
+}
+
+/* Filter Range Slider */
+.sbt-filter-range {
+    padding: 8px 0;
+}
+
+.sbt-filter-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--sbt-gray-200);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
+.sbt-filter-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary));
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+}
+
+.sbt-filter-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+}
+
+.sbt-filter-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sbt-primary-light), var(--sbt-primary));
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.sbt-filter-slider::-moz-range-thumb:hover {
+    transform: scale(1.3);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+}
+
+.sbt-filter-range-value {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--sbt-gray-700);
+    text-align: center;
+    font-weight: 600;
+}
+
+.sbt-range-current {
+    color: var(--sbt-primary);
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.sbt-range-separator {
+    margin: 0 4px;
+    color: var(--sbt-gray-400);
+}
+
+.sbt-range-max {
+    color: var(--sbt-gray-600);
+}
+
+/* Tours Main Content Area */
+.sbt-tours-main-content {
+    min-width: 0;
+}
+
+/* =======================
+   BOOKING SEARCH BAR
+   ======================= */
+
+.sbt-booking-search-bar {
+    padding: 0 40px 24px;
+    border-bottom: 1px solid var(--sbt-gray-100);
+}
+
+.sbt-search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sbt-search-input-wrapper svg {
+    position: absolute;
+    left: 16px;
+    color: var(--sbt-gray-400);
+    pointer-events: none;
+}
+
+.sbt-booking-search-input {
+    width: 100%;
+    padding: 14px 50px 14px 48px;
+    border: 2px solid var(--sbt-gray-200);
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--sbt-white);
+}
+
+.sbt-booking-search-input:focus {
+    outline: none;
+    border-color: var(--sbt-primary-light);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbff 100%);
+}
+
+.sbt-booking-search-input::placeholder {
+    color: var(--sbt-gray-400);
+}
+
+.sbt-search-clear {
+    position: absolute;
+    right: 14px;
+    background: var(--sbt-gray-200);
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.sbt-search-clear:hover {
+    background: var(--sbt-danger);
+    color: var(--sbt-white);
+    transform: scale(1.15);
+}
+
+.sbt-search-clear svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Hide/Show Tours Based on Filter */
+.sbt-tour-card-archive.sbt-filtered-hidden {
+    display: none;
+}
+
+/* Responsive Filters */
+@media (max-width: 1024px) {
+    .sbt-tour-archive.sbt-has-sidebar-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .sbt-filters-sidebar {
+        position: static;
+        margin-bottom: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sbt-filters-sidebar {
+        padding: 20px;
+    }
+
+    .sbt-booking-search-bar {
+        padding: 0 24px 20px;
+    }
+
+    .sbt-booking-search-input {
+        padding: 12px 44px 12px 42px;
+        font-size: 14px;
+    }
+}
