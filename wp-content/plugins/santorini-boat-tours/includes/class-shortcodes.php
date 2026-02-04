@@ -546,7 +546,7 @@ class SBT_Shortcodes
 
                         <div class="sbt-tour-card-content">
                             <h3 class="sbt-tour-card-title">
-                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>"><?php the_title(); ?></a>
+                                <a href="<?php echo esc_url(home_url('/tour/?id=' . $tour_id)); ?>" target="_blank"><?php the_title(); ?></a>
                             </h3>
 
                             <?php if (get_the_excerpt()): ?>

@@ -363,6 +363,14 @@
         },
         
         selectTour: function(e) {
+            // Only handle clicks on the card itself, not on links/buttons inside it
+            const $target = $(e.target);
+
+            // If clicked element is a link or button, or is inside a link/button, allow default behavior
+            if ($target.is('a, button') || $target.closest('a, button').length) {
+                return; // Let the link/button work normally
+            }
+
             e.preventDefault();
             e.stopPropagation();
 
