@@ -30,6 +30,7 @@ class SBT_Admin_Dashboard {
         // Add quick edit support for booking status
         add_action('quick_edit_custom_box', [$this, 'booking_quick_edit'], 10, 2);
         add_action('save_post_sbt_booking', [$this, 'save_booking_status_quick_edit']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
         add_action('admin_footer', [$this, 'booking_quick_edit_script']);
 
         // Make status column sortable and editable
@@ -40,6 +41,10 @@ class SBT_Admin_Dashboard {
         add_action('wp_ajax_sbt_cancel_booking', [$this, 'ajax_cancel_booking']);
         add_action('wp_ajax_sbt_confirm_booking', [$this, 'ajax_confirm_booking']);
         add_action('wp_ajax_sbt_refund_booking', [$this, 'ajax_refund_booking']);
+        add_action('wp_ajax_sbt_get_booking_details', [$this, 'ajax_get_booking_details']);
+
+        // Add quick view modal
+        add_action('admin_footer', [$this, 'booking_quick_view_modal']);
     }
     
     public function add_admin_menu() {
@@ -213,12 +218,16 @@ class SBT_Admin_Dashboard {
                         <th>Date</th>
                         <th>Passengers</th>
                         <th>Amount</th>
+                        <th>Payment</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($recent_bookings as $booking): 
+                    <?php
+                    $require_payment = get_option('sbt_require_payment', true);
+                    foreach ($recent_bookings as $booking):
                         $status = get_field('booking_status', $booking->ID);
+                        $payment_method = get_field('booking_payment_method', $booking->ID);
                         $status_colors = [
                             'pending' => '#f59e0b',
                             'confirmed' => '#10b981',
@@ -234,6 +243,13 @@ class SBT_Admin_Dashboard {
                         <td><?php echo esc_html(date('M j, Y', strtotime(get_field('booking_date', $booking->ID)))); ?></td>
                         <td><?php echo esc_html(get_field('booking_passengers', $booking->ID)); ?></td>
                         <td><?php echo esc_html(get_option('sbt_currency_symbol', '€') . number_format(get_field('booking_total_amount', $booking->ID), 2)); ?></td>
+                        <td>
+                            <?php if (!$require_payment): ?>
+                                <em style="color: #666;">In Person</em>
+                            <?php else: ?>
+                                <?php echo esc_html(ucfirst($payment_method ?: 'Pending')); ?>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <span style="background: <?php echo esc_attr($status_colors[$status] ?? '#6b7280'); ?>; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; text-transform: uppercase;">
                                 <?php echo esc_html($status); ?>
@@ -575,6 +591,15 @@ class SBT_Admin_Dashboard {
         }
     }
 
+    public function enqueue_admin_scripts($hook) {
+        global $post_type;
+
+        // Only load on booking edit screen
+        if ($post_type === 'sbt_booking' && $hook === 'edit.php') {
+            wp_enqueue_script('inline-edit-post');
+        }
+    }
+
     public function booking_quick_edit_script() {
         global $current_screen;
 
@@ -585,6 +610,11 @@ class SBT_Admin_Dashboard {
         ?>
         <script type="text/javascript">
         (function($) {
+            // Check if inlineEditPost is available
+            if (typeof inlineEditPost === 'undefined') {
+                return;
+            }
+
             // Populate quick edit fields with current values
             var $wp_inline_edit = inlineEditPost.edit;
             inlineEditPost.edit = function(id) {
@@ -810,5 +840,383 @@ class SBT_Admin_Dashboard {
         update_post_meta($booking_id, '_booking_log', $log);
 
         wp_send_json_success('Booking refunded successfully');
+    }
+
+    /**
+     * AJAX handler for getting booking details
+     */
+    public function ajax_get_booking_details() {
+        check_ajax_referer('sbt-admin-nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $booking_id = intval($_POST['booking_id']);
+        $booking = get_post($booking_id);
+
+        if (!$booking || $booking->post_type !== 'sbt_booking') {
+            wp_send_json_error('Booking not found');
+        }
+
+        // Get booking details
+        $tour_ids = get_field('booking_tours', $booking_id) ?: [get_field('booking_tour', $booking_id)];
+        $dates = get_field('booking_dates', $booking_id) ?: [get_field('booking_date', $booking_id)];
+        $destinations = get_field('booking_destinations', $booking_id) ?: [];
+        $currency_symbol = get_option('sbt_currency_symbol', '€');
+        $require_payment = get_option('sbt_require_payment', true);
+
+        // Build tour info
+        $tours_html = '';
+        foreach ($tour_ids as $tour_id) {
+            $tour_title = get_the_title($tour_id);
+            $tour_type = get_field('tour_type', $tour_id);
+            $tours_html .= '<li>' . esc_html($tour_title) . ' <small>(' . esc_html(ucwords(str_replace('_', ' ', $tour_type))) . ')</small></li>';
+        }
+
+        // Build dates info
+        $dates_html = '';
+        foreach ($dates as $date) {
+            $dates_html .= '<li>' . esc_html(date('l, F j, Y', strtotime($date))) . '</li>';
+        }
+
+        // Build destinations info
+        $destinations_html = '';
+        if (!empty($destinations)) {
+            foreach ($destinations as $destination) {
+                $destinations_html .= '<li>' . esc_html($destination) . '</li>';
+            }
+        }
+
+        $status = get_field('booking_status', $booking_id);
+        $payment_method = get_field('booking_payment_method', $booking_id);
+        $payment_id = get_field('booking_payment_id', $booking_id);
+        $total_amount = get_field('booking_total_amount', $booking_id);
+
+        $html = '
+        <div class="sbt-booking-details-modal">
+            <div class="sbt-detail-section">
+                <h3>Booking Information</h3>
+                <table class="sbt-detail-table">
+                    <tr>
+                        <th>Confirmation Code:</th>
+                        <td><strong>' . esc_html(get_field('booking_confirmation_code', $booking_id)) . '</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td><span class="sbt-status-badge sbt-status-' . esc_attr($status) . '">' . esc_html(ucfirst($status)) . '</span></td>
+                    </tr>
+                    <tr>
+                        <th>Booking Date:</th>
+                        <td>' . esc_html(get_the_date('F j, Y @ g:i a', $booking_id)) . '</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="sbt-detail-section">
+                <h3>Customer Details</h3>
+                <table class="sbt-detail-table">
+                    <tr>
+                        <th>Name:</th>
+                        <td>' . esc_html(get_field('booking_customer_first_name', $booking_id) . ' ' . get_field('booking_customer_last_name', $booking_id)) . '</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td><a href="mailto:' . esc_attr(get_field('booking_customer_email', $booking_id)) . '">' . esc_html(get_field('booking_customer_email', $booking_id)) . '</a></td>
+                    </tr>
+                    <tr>
+                        <th>Phone:</th>
+                        <td><a href="tel:' . esc_attr(get_field('booking_customer_phone', $booking_id)) . '">' . esc_html(get_field('booking_customer_phone', $booking_id)) . '</a></td>
+                    </tr>
+                    ' . (get_field('booking_customer_country', $booking_id) ? '
+                    <tr>
+                        <th>Country:</th>
+                        <td>' . esc_html(get_field('booking_customer_country', $booking_id)) . '</td>
+                    </tr>' : '') . '
+                </table>
+            </div>
+
+            <div class="sbt-detail-section">
+                <h3>Tour Details</h3>
+                <table class="sbt-detail-table">
+                    <tr>
+                        <th>Tour(s):</th>
+                        <td><ul class="sbt-list">' . $tours_html . '</ul></td>
+                    </tr>
+                    <tr>
+                        <th>Date(s):</th>
+                        <td><ul class="sbt-list">' . $dates_html . '</ul></td>
+                    </tr>
+                    ' . (!empty($destinations_html) ? '
+                    <tr>
+                        <th>Destinations:</th>
+                        <td><ul class="sbt-list">' . $destinations_html . '</ul></td>
+                    </tr>' : '') . '
+                    <tr>
+                        <th>Passengers:</th>
+                        <td>' . esc_html(get_field('booking_passengers', $booking_id)) . '</td>
+                    </tr>
+                    ' . (get_field('booking_special_requests', $booking_id) ? '
+                    <tr>
+                        <th>Special Requests:</th>
+                        <td>' . esc_html(get_field('booking_special_requests', $booking_id)) . '</td>
+                    </tr>' : '') . '
+                </table>
+            </div>
+
+            <div class="sbt-detail-section">
+                <h3>Payment Details</h3>
+                <table class="sbt-detail-table">
+                    <tr>
+                        <th>Total Amount:</th>
+                        <td><strong>' . esc_html($currency_symbol . number_format($total_amount, 2)) . '</strong></td>
+                    </tr>';
+
+        if (!$require_payment) {
+            $html .= '
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td><em>Payment will be received in person</em></td>
+                    </tr>';
+        } else {
+            $html .= '
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td>' . esc_html(ucfirst($payment_method ?: 'N/A')) . '</td>
+                    </tr>
+                    ' . ($payment_id ? '
+                    <tr>
+                        <th>Payment ID:</th>
+                        <td><code>' . esc_html($payment_id) . '</code></td>
+                    </tr>' : '') . '';
+        }
+
+        $html .= '
+                </table>
+            </div>
+
+            ' . (get_field('booking_notes', $booking_id) ? '
+            <div class="sbt-detail-section">
+                <h3>Admin Notes</h3>
+                <p>' . esc_html(get_field('booking_notes', $booking_id)) . '</p>
+            </div>' : '') . '
+
+            <div class="sbt-detail-actions">
+                <a href="' . admin_url('post.php?post=' . $booking_id . '&action=edit') . '" class="button button-primary">Edit Booking</a>
+                <button type="button" class="button" onclick="jQuery(\'#sbt-quick-view-modal\').hide();">Close</button>
+            </div>
+        </div>';
+
+        wp_send_json_success($html);
+    }
+
+    /**
+     * Render quick view modal in admin footer
+     */
+    public function booking_quick_view_modal() {
+        global $current_screen;
+
+        if (!$current_screen || $current_screen->post_type !== 'sbt_booking') {
+            return;
+        }
+
+        ?>
+        <div id="sbt-quick-view-modal" class="sbt-modal" style="display: none;">
+            <div class="sbt-modal-overlay"></div>
+            <div class="sbt-modal-content">
+                <div class="sbt-modal-header">
+                    <h2>Booking Details</h2>
+                    <button type="button" class="sbt-modal-close">&times;</button>
+                </div>
+                <div class="sbt-modal-body">
+                    <div class="sbt-loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .sbt-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 100000;
+            }
+            .sbt-modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+            }
+            .sbt-modal-content {
+                position: relative;
+                max-width: 800px;
+                margin: 50px auto;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+                max-height: calc(100vh - 100px);
+                display: flex;
+                flex-direction: column;
+            }
+            .sbt-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 25px;
+                border-bottom: 1px solid #ddd;
+            }
+            .sbt-modal-header h2 {
+                margin: 0;
+                font-size: 24px;
+            }
+            .sbt-modal-close {
+                background: none;
+                border: none;
+                font-size: 32px;
+                line-height: 1;
+                cursor: pointer;
+                color: #666;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+            }
+            .sbt-modal-close:hover {
+                color: #000;
+            }
+            .sbt-modal-body {
+                padding: 25px;
+                overflow-y: auto;
+            }
+            .sbt-loading {
+                text-align: center;
+                padding: 40px;
+                font-size: 16px;
+                color: #666;
+            }
+            .sbt-detail-section {
+                margin-bottom: 25px;
+            }
+            .sbt-detail-section h3 {
+                margin: 0 0 15px 0;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #2271b1;
+                color: #2271b1;
+                font-size: 18px;
+            }
+            .sbt-detail-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .sbt-detail-table th {
+                text-align: left;
+                padding: 8px 12px;
+                font-weight: 600;
+                color: #555;
+                width: 180px;
+                vertical-align: top;
+            }
+            .sbt-detail-table td {
+                padding: 8px 12px;
+                color: #333;
+            }
+            .sbt-detail-table tr {
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .sbt-list {
+                margin: 0;
+                padding-left: 20px;
+            }
+            .sbt-list li {
+                margin: 4px 0;
+            }
+            .sbt-status-badge {
+                display: inline-block;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: #fff;
+            }
+            .sbt-status-pending {
+                background: #f59e0b;
+            }
+            .sbt-status-confirmed {
+                background: #10b981;
+            }
+            .sbt-status-cancelled {
+                background: #ef4444;
+            }
+            .sbt-status-completed {
+                background: #6b7280;
+            }
+            .sbt-status-refunded {
+                background: #8b5cf6;
+            }
+            .sbt-detail-actions {
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+                text-align: right;
+            }
+            .sbt-detail-actions .button {
+                margin-left: 10px;
+            }
+        </style>
+
+        <script>
+        jQuery(document).ready(function($) {
+            // Quick view button click
+            $(document).on('click', '.sbt-quick-view-booking', function(e) {
+                e.preventDefault();
+
+                var bookingId = $(this).data('booking-id');
+                var $modal = $('#sbt-quick-view-modal');
+                var $body = $modal.find('.sbt-modal-body');
+
+                // Show modal with loading
+                $body.html('<div class="sbt-loading">Loading booking details...</div>');
+                $modal.show();
+
+                // Load booking details
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'sbt_get_booking_details',
+                        booking_id: bookingId,
+                        nonce: '<?php echo wp_create_nonce('sbt-admin-nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $body.html(response.data);
+                        } else {
+                            $body.html('<div class="notice notice-error"><p>Failed to load booking details.</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $body.html('<div class="notice notice-error"><p>An error occurred while loading booking details.</p></div>');
+                    }
+                });
+            });
+
+            // Close modal
+            $(document).on('click', '.sbt-modal-close, .sbt-modal-overlay', function() {
+                $('#sbt-quick-view-modal').hide();
+            });
+
+            // Escape key to close
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    $('#sbt-quick-view-modal').hide();
+                }
+            });
+        });
+        </script>
+        <?php
     }
 }

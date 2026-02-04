@@ -1036,6 +1036,7 @@ class SBT_Shortcodes
         $payment_method = get_field('booking_payment_method', $booking_id);
         $created_date = get_the_date('F j, Y', $booking_id);
         $created_time = get_the_time('g:i A', $booking_id);
+        $require_payment = get_option('sbt_require_payment', true);
 
         // Customer details
         $first_name = get_field('booking_customer_first_name', $booking_id);
@@ -1273,7 +1274,12 @@ class SBT_Shortcodes
                                 <span class="sbt-summary-value sbt-code-highlight"><?php echo esc_html($confirmation_code); ?></span>
                             </div>
 
-                            <?php if ($payment_method): ?>
+                            <?php if (!$require_payment): ?>
+                                <div class="sbt-summary-row">
+                                    <span class="sbt-summary-label">Payment Method</span>
+                                    <span class="sbt-summary-value"><em>Payment will be received in person</em></span>
+                                </div>
+                            <?php elseif ($payment_method): ?>
                                 <div class="sbt-summary-row">
                                     <span class="sbt-summary-label">Payment Method</span>
                                     <span class="sbt-summary-value"><?php echo esc_html(ucfirst($payment_method)); ?></span>

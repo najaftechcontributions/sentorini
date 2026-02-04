@@ -354,6 +354,7 @@
 
 .sbt-tour-card-archive .sbt-tour-card-content {
     padding: 24px;
+    background-color: #fff;
 }
 
 .sbt-tour-card-title {
@@ -1810,6 +1811,7 @@
     font-size: 28px;
     font-weight: 800;
     color: var(--sbt-primary);
+    padding-top: 0 !important;
 }
 
 /* Form Inputs and Elements */
@@ -2880,6 +2882,7 @@
     padding-top: 16px;
     border-top: 2px solid var(--sbt-primary);
     margin-top: 8px;
+    align-items: center;
 }
 
 .sbt-summary-total .sbt-summary-label {

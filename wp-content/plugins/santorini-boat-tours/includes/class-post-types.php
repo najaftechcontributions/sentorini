@@ -22,6 +22,8 @@ class SBT_Post_Types {
         add_action('init', [$this, 'register_post_types']);
         add_action('init', [$this, 'register_taxonomies']);
         add_action('acf/init', [$this, 'register_acf_fields']);
+        add_action('add_meta_boxes', [$this, 'remove_booking_meta_boxes']);
+        add_filter('post_row_actions', [$this, 'modify_booking_row_actions'], 10, 2);
     }
     
     public function register_post_types() {
@@ -66,7 +68,7 @@ class SBT_Post_Types {
             'public' => false,
             'show_ui' => true,
             'has_archive' => false,
-            'supports' => ['title'],
+            'supports' => [],
             'menu_icon' => 'dashicons-calendar-alt',
             'show_in_rest' => true,
             'capability_type' => 'post',
@@ -459,5 +461,93 @@ class SBT_Post_Types {
                 ]
             ]
         ]);
+    }
+
+    /**
+     * Remove unnecessary meta boxes from booking edit screen
+     */
+    public function remove_booking_meta_boxes() {
+        // Remove title field (div)
+        remove_post_type_support('sbt_booking', 'title');
+
+        // Remove publish box (contains post status, visibility, etc.)
+        remove_meta_box('submitdiv', 'sbt_booking', 'side');
+
+        // Remove slug box
+        remove_meta_box('slugdiv', 'sbt_booking', 'normal');
+
+        // Remove author box
+        remove_meta_box('authordiv', 'sbt_booking', 'normal');
+
+        // Remove comments status
+        remove_meta_box('commentstatusdiv', 'sbt_booking', 'normal');
+
+        // Remove comments
+        remove_meta_box('commentsdiv', 'sbt_booking', 'normal');
+
+        // Remove revisions
+        remove_meta_box('revisionsdiv', 'sbt_booking', 'normal');
+
+        // Add simplified booking actions box
+        add_meta_box(
+            'sbt_booking_actions',
+            __('Booking Actions', 'santorini-boat-tours'),
+            [$this, 'render_booking_actions_box'],
+            'sbt_booking',
+            'side',
+            'high'
+        );
+    }
+
+    /**
+     * Render simplified booking actions meta box
+     */
+    public function render_booking_actions_box($post) {
+        $status = get_field('booking_status', $post->ID);
+        ?>
+        <div class="submitbox" id="submitpost">
+            <div id="major-publishing-actions">
+                <div id="publishing-action">
+                    <span class="spinner"></span>
+                    <input type="submit" name="save" id="publish" class="button button-primary button-large" value="<?php echo $post->post_status === 'auto-draft' ? __('Create Booking', 'santorini-boat-tours') : __('Update Booking', 'santorini-boat-tours'); ?>">
+                </div>
+                <div class="clear"></div>
+            </div>
+
+            <?php if ($post->ID && $status): ?>
+            <div id="minor-publishing-actions" style="padding: 10px 12px; border-top: 1px solid #ddd; margin-top: 10px;">
+                <div style="margin-bottom: 8px;">
+                    <strong><?php _e('Current Status:', 'santorini-boat-tours'); ?></strong><br>
+                    <span style="text-transform: uppercase; color: #666;"><?php echo esc_html($status); ?></span>
+                </div>
+                <div>
+                    <strong><?php _e('Created:', 'santorini-boat-tours'); ?></strong><br>
+                    <?php echo get_the_date('M j, Y @ g:i a', $post->ID); ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Modify row actions for booking list
+     */
+    public function modify_booking_row_actions($actions, $post) {
+        if ($post->post_type === 'sbt_booking') {
+            // Remove default view action
+            unset($actions['view']);
+
+            // Add quick view action
+            $actions['quick_view'] = sprintf(
+                '<a href="#" class="sbt-quick-view-booking" data-booking-id="%d">%s</a>',
+                $post->ID,
+                __('Quick View', 'santorini-boat-tours')
+            );
+
+            // Keep quick edit for status updates
+        }
+
+        return $actions;
     }
 }
