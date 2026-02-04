@@ -326,7 +326,7 @@ class SBT_Shortcodes {
         </div>
         <?php
         wp_reset_postdata();
-        return ob_get_clean()
+        return ob_get_clean();
     }   
     
     /**
