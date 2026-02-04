@@ -225,10 +225,67 @@ class SBT_Post_Types {
                     'default_value' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
                 ],
                 [
+                    'key' => 'field_tour_season_start',
+                    'label' => 'Season Start Date',
+                    'name' => 'tour_season_start',
+                    'type' => 'date_picker',
+                    'instructions' => 'First date this tour is available for booking',
+                    'required' => 0,
+                    'return_format' => 'Y-m-d',
+                    'display_format' => 'd/m/Y'
+                ],
+                [
+                    'key' => 'field_tour_season_end',
+                    'label' => 'Season End Date',
+                    'name' => 'tour_season_end',
+                    'type' => 'date_picker',
+                    'instructions' => 'Last date this tour is available for booking',
+                    'required' => 0,
+                    'return_format' => 'Y-m-d',
+                    'display_format' => 'd/m/Y'
+                ],
+                [
+                    'key' => 'field_tour_availability_ranges',
+                    'label' => 'Custom Availability Ranges',
+                    'name' => 'tour_availability_ranges',
+                    'type' => 'repeater',
+                    'instructions' => 'Add specific date ranges when this tour is available (optional)',
+                    'layout' => 'row',
+                    'button_label' => 'Add Date Range',
+                    'sub_fields' => [
+                        [
+                            'key' => 'field_range_start',
+                            'label' => 'Start Date',
+                            'name' => 'range_start',
+                            'type' => 'date_picker',
+                            'return_format' => 'Y-m-d',
+                            'display_format' => 'd/m/Y',
+                            'required' => 1
+                        ],
+                        [
+                            'key' => 'field_range_end',
+                            'label' => 'End Date',
+                            'name' => 'range_end',
+                            'type' => 'date_picker',
+                            'return_format' => 'Y-m-d',
+                            'display_format' => 'd/m/Y',
+                            'required' => 1
+                        ],
+                        [
+                            'key' => 'field_range_notes',
+                            'label' => 'Notes',
+                            'name' => 'range_notes',
+                            'type' => 'text',
+                            'placeholder' => 'e.g., Summer Season, Peak Hours'
+                        ]
+                    ]
+                ],
+                [
                     'key' => 'field_tour_blackout_dates',
                     'label' => 'Blackout Dates',
                     'name' => 'tour_blackout_dates',
                     'type' => 'repeater',
+                    'instructions' => 'Specific dates when this tour is NOT available',
                     'layout' => 'table',
                     'button_label' => 'Add Blackout Date',
                     'sub_fields' => [

@@ -11,8 +11,10 @@
             this.initBookingWidget();
             this.initCalendar();
             this.initURLFilters();
+            this.initGalleryLightbox();
+            this.initFormValidation();
         },
-        
+
         bindEvents: function() {
             $(document).on('click', '.sbt-tour-option', this.selectTour);
             $(document).on('click', '.sbt-calendar-day:not(.disabled):not(.blocked)', this.selectDate);
@@ -20,6 +22,149 @@
             $(document).on('submit', '.sbt-booking-form', this.submitBooking);
             $(document).on('click', '.sbt-step-next', this.nextStep);
             $(document).on('click', '.sbt-step-prev', this.prevStep);
+            $(document).on('click', '.sbt-gallery-image', this.openLightbox);
+            $(document).on('click', '.sbt-lightbox-close', this.closeLightbox);
+            $(document).on('click', '.sbt-lightbox-overlay', this.closeLightbox);
+            $(document).on('click', '.sbt-lightbox-prev', this.prevImage);
+            $(document).on('click', '.sbt-lightbox-next', this.nextImage);
+            $(document).on('keydown', this.handleKeyboard);
+        },
+
+        initGalleryLightbox: function() {
+            // Initialize gallery images array
+            SBT.galleryImages = [];
+            $('.sbt-gallery-image').each(function(index) {
+                SBT.galleryImages.push({
+                    src: $(this).data('full'),
+                    alt: $(this).attr('alt'),
+                    index: index
+                });
+            });
+        },
+
+        openLightbox: function(e) {
+            e.preventDefault();
+            const $img = $(this);
+            const fullSrc = $img.data('full');
+            const index = $('.sbt-gallery-image').index($img);
+
+            SBT.currentImageIndex = index;
+
+            $('.sbt-lightbox-image').attr('src', fullSrc).attr('alt', $img.attr('alt'));
+            $('.sbt-lightbox').fadeIn(300);
+            $('body').css('overflow', 'hidden');
+        },
+
+        closeLightbox: function(e) {
+            if (e.target === e.currentTarget) {
+                $('.sbt-lightbox').fadeOut(300);
+                $('body').css('overflow', '');
+            }
+        },
+
+        prevImage: function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (SBT.currentImageIndex > 0) {
+                SBT.currentImageIndex--;
+                const img = SBT.galleryImages[SBT.currentImageIndex];
+                $('.sbt-lightbox-image').attr('src', img.src).attr('alt', img.alt);
+            }
+        },
+
+        nextImage: function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (SBT.currentImageIndex < SBT.galleryImages.length - 1) {
+                SBT.currentImageIndex++;
+                const img = SBT.galleryImages[SBT.currentImageIndex];
+                $('.sbt-lightbox-image').attr('src', img.src).attr('alt', img.alt);
+            }
+        },
+
+        handleKeyboard: function(e) {
+            if ($('.sbt-lightbox').is(':visible')) {
+                if (e.key === 'Escape') {
+                    SBT.closeLightbox({ target: $('.sbt-lightbox-overlay')[0], currentTarget: $('.sbt-lightbox-overlay')[0] });
+                } else if (e.key === 'ArrowLeft') {
+                    SBT.prevImage(e);
+                } else if (e.key === 'ArrowRight') {
+                    SBT.nextImage(e);
+                }
+            }
+        },
+
+        initFormValidation: function() {
+            // Real-time validation for form fields
+            $('.sbt-form-input, .sbt-form-textarea, .sbt-form-select').on('blur', function() {
+                SBT.validateField($(this));
+            });
+
+            // Clear error on focus
+            $('.sbt-form-input, .sbt-form-textarea, .sbt-form-select').on('focus', function() {
+                $(this).removeClass('error').siblings('.sbt-field-error').hide();
+            });
+        },
+
+        validateField: function($field) {
+            const value = $field.val().trim();
+            const isRequired = $field.prop('required');
+            let isValid = true;
+            let errorMessage = '';
+
+            if (isRequired && !value) {
+                isValid = false;
+                errorMessage = 'This field is required';
+            } else if ($field.attr('type') === 'email' && value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid email address';
+                }
+            } else if ($field.attr('type') === 'tel' && value) {
+                if (value.length < 10) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid phone number';
+                }
+            }
+
+            if (!isValid) {
+                $field.addClass('error');
+                $field.siblings('.sbt-field-error').text(errorMessage).show();
+            } else {
+                $field.removeClass('error');
+                $field.siblings('.sbt-field-error').hide();
+            }
+
+            return isValid;
+        },
+
+        validateForm: function($form) {
+            let isValid = true;
+
+            $form.find('[required]').each(function() {
+                if (!SBT.validateField($(this))) {
+                    isValid = false;
+                }
+            });
+
+            // Check terms checkbox
+            const $terms = $('#sbt-terms');
+            if ($terms.length && !$terms.is(':checked')) {
+                $terms.siblings('.sbt-field-error').show();
+                isValid = false;
+            }
+
+            // Check payment method
+            const paymentMethod = $('input[name="payment_method"]:checked').val();
+            if (!paymentMethod) {
+                $('input[name="payment_method"]').closest('.sbt-form-group').find('.sbt-field-error').show();
+                isValid = false;
+            }
+
+            return isValid;
         },
         
         initBookingWidget: function() {
@@ -417,20 +562,34 @@
         
         submitBooking: function(e) {
             e.preventDefault();
-            
+
             const $form = $(this);
+
+            // Validate form first
+            if (!SBT.validateForm($form)) {
+                SBT.showError('Please fill in all required fields correctly');
+                // Scroll to first error
+                const $firstError = $form.find('.error').first();
+                if ($firstError.length) {
+                    $('html, body').animate({
+                        scrollTop: $firstError.offset().top - 100
+                    }, 300);
+                }
+                return;
+            }
+
             const formData = $form.serializeArray();
             const bookingData = {};
-            
+
             formData.forEach(field => {
                 bookingData[field.name] = field.value;
             });
-            
+
             // Add tour, date, and passenger data
             bookingData.tour_id = SBT.selectedTourId;
             bookingData.date = SBT.selectedDate;
             bookingData.passengers = SBT.passengerCount;
-            
+
             // Add reCAPTCHA token if enabled
             if (sbtData.recaptchaSiteKey) {
                 grecaptcha.ready(function() {
